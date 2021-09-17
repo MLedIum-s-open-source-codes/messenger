@@ -13,6 +13,8 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
+
 import static java.lang.String.format;
 
 @Log4j2
@@ -41,9 +43,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
   @Override
   public AuthenticationResponse register(AuthenticationRequest authenticationRequest) {
-    if (userService.existsUserWithUsername(authenticationRequest.getUsername())) {
-      throw new CustomException(ErrorTypeEnum.ALREADY_EXIST, format("User with username '%s' already exist"));
-    }
+    userService.checkNotExistsUserWithUsername(authenticationRequest.getUsername());
+
     authenticationRequest.setPassword(passwordEncoder.encode(authenticationRequest.getPassword()));
     User user = userService.create(authenticationRequest);
 
@@ -52,6 +53,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     return AuthenticationResponse.builder()
         .token(token)
         .build();
+  }
+
+  @Override
+  public void logout(HttpServletRequest request) {
+
+    jwtTokenProvider.addToBlackList(request);
   }
 
 }

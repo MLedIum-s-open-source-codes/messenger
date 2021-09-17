@@ -25,9 +25,8 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public User create(AuthenticationRequest authenticationRequest) {
-    if (existsUserWithUsername(authenticationRequest.getUsername())) {
-      throw new RuntimeException(format("User with username '%s' already exists", authenticationRequest.getUsername()));
-    }
+    checkNotExistsUserWithUsername(authenticationRequest.getUsername());
+
     User user = User.builder()
         .username(authenticationRequest.getUsername())
         .password(authenticationRequest.getPassword())
@@ -65,6 +64,12 @@ public class UserServiceImpl implements UserService {
     }
 
     return update(user);
+  }
+
+  @Override
+  public boolean existsUserWithId(Long id) {
+
+    return userRepository.existsById(id);
   }
 
   @Override

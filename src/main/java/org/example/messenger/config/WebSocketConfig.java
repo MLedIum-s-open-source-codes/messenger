@@ -15,7 +15,6 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 import java.util.List;
 
 @Configuration
-@EnableScheduling
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
@@ -41,4 +40,5 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     messageConverters.add(converter);
     return false;
   }
+
 }

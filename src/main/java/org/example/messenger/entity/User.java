@@ -7,8 +7,8 @@ import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
 @Entity
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -25,6 +25,22 @@ public class User {
 
   @Builder.Default
   private boolean enabled = false;
+
+  @Builder.Default
+  @OneToMany(
+      mappedBy = "user",
+      fetch = FetchType.EAGER,
+      cascade = CascadeType.ALL,
+      orphanRemoval = true)
+  @EqualsAndHashCode.Exclude
+  private Set<ChatUser> userChats = new HashSet<>();
+
+  @Builder.Default
+  @OneToMany(
+      mappedBy = "user",
+      fetch = FetchType.LAZY)
+  @EqualsAndHashCode.Exclude
+  private Set<Message> userMessages = new HashSet<>();
 
   @Builder.Default
   @EqualsAndHashCode.Exclude

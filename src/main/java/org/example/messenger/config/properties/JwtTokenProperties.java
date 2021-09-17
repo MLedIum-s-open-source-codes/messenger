@@ -1,6 +1,7 @@
 package org.example.messenger.config.properties;
 
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Data
