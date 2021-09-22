@@ -13,6 +13,8 @@ public class AuthenticationRequest {
 
   private String username;
 
+  private String publicName;
+
   private String password;
 
 }

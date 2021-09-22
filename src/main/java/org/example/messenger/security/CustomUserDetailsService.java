@@ -1,6 +1,6 @@
 package org.example.messenger.security;
 
-import org.example.messenger.entity.User;
+import org.example.messenger.domain.model.User;
 import org.example.messenger.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -23,11 +23,11 @@ public class CustomUserDetailsService implements UserDetailsService {
 
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-    User user = userService.getByUsername(username);
+    User user = userService.get(username);
     log.info("User '{}' authorize successfully", user.getUsername());
 
     List<GrantedAuthority> grantedAuthorities = user.getRoles().stream()
-        .map(role -> "ROLE_" + role.getName().toUpperCase())
+        .map(role -> "ROLE_" + role.toUpperCase())
         .map(SimpleGrantedAuthority::new)
         .collect(Collectors.toList());
 

@@ -2,7 +2,7 @@ package org.example.messenger.service.impl;
 
 import org.example.messenger.domain.request.AuthenticationRequest;
 import org.example.messenger.domain.response.AuthenticationResponse;
-import org.example.messenger.entity.User;
+import org.example.messenger.domain.model.User;
 import org.example.messenger.enumeration.ErrorTypeEnum;
 import org.example.messenger.exception.CustomException;
 import org.example.messenger.security.token.JwtTokenProvider;
@@ -34,7 +34,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       throw new CustomException(ErrorTypeEnum.INCORRECT_LOGIN_OR_PASSWORD, format("Incorrect login or password"));
     }
 
-    String token = jwtTokenProvider.createToken(user.getUsername());
+    String token = jwtTokenProvider.createToken(user);
 
     return AuthenticationResponse.builder()
         .token(token)
@@ -48,7 +48,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     authenticationRequest.setPassword(passwordEncoder.encode(authenticationRequest.getPassword()));
     User user = userService.create(authenticationRequest);
 
-    String token = jwtTokenProvider.createToken(user.getUsername());
+    String token = jwtTokenProvider.createToken(user);
 
     return AuthenticationResponse.builder()
         .token(token)

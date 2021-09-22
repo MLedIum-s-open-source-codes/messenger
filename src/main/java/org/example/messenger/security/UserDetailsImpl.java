@@ -16,7 +16,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class UserDetailsImpl implements UserDetails {
 
-  private Long id;
+  private String id;
   private String username;
   private String password;
   private List<GrantedAuthority> authorities;

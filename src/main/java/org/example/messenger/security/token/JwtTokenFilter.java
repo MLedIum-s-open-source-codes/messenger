@@ -1,6 +1,5 @@
 package org.example.messenger.security.token;
 
-import org.example.messenger.enumeration.TokenSubjectEnum;
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -40,7 +39,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
   private void doTokenFilter(HttpServletRequest request) {
     String token = jwtTokenProvider.getToken(request);
     if (token != null) {
-      //jwtTokenProvider.validateToken(TokenSubjectEnum.AUTH.name(), token);
       UsernamePasswordAuthenticationToken authentication
           = jwtTokenProvider.getAuthentication(token);
       authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

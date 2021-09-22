@@ -1,31 +1,15 @@
 package org.example.messenger.service;
 
-import org.example.messenger.domain.dto.ChatDto;
-import org.example.messenger.entity.Chat;
-import org.example.messenger.enumeration.ErrorTypeEnum;
-import org.example.messenger.exception.CustomException;
+import org.example.messenger.domain.model.Chat;
 
-import static java.lang.String.format;
+import java.util.List;
 
 public interface ChatService {
 
-  Chat create(Long... usersIds);
+  Chat getOrCreateChat(String userId, String interlocutorId);
 
-  Chat create(String title, Long... usersIds);
-
-  Chat get(Long id);
-
-  Chat edit(ChatDto dto);
-
-  default void checkExistsChatWithId(Long id) {
-    if (!existsChatWithId(id))
-        throw new CustomException(ErrorTypeEnum.NOT_FOUND, format("Chat with id '%s' was not found", id));
-  }
-
-  boolean existsChatWithId(Long id);
+  List<Chat> getChatsByUserId(String userId);
 
   Chat update(Chat chat);
-
-  void delete(Long id);
 
 }

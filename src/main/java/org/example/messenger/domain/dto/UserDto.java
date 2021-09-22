@@ -1,10 +1,12 @@
 package org.example.messenger.domain.dto;
 
-import org.example.messenger.entity.User;
+import org.example.messenger.domain.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.Instant;
 
 @Data
 @Builder
@@ -12,21 +14,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserDto {
 
-  private Long id;
+  private String id;
 
-  private String username;
+  private String name;
 
   public static UserDto of(User user) {
     return UserDto.builder()
         .id(user.getId())
-        .username(user.getUsername())
-        .build();
-  }
-
-  public User toDomain() {
-    return User.builder()
-        .id(id)
-        .username(username)
+        .name(user.getPublicName())
         .build();
   }
 

@@ -1,3 +1,4 @@
+/*
 package org.example.messenger.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,3 +43,4 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
   }
 
 }
+*/

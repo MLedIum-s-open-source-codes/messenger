@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.example.messenger.entity.Message;
+import org.example.messenger.domain.model.Message;
 
 @Data
 @Builder
@@ -12,17 +12,29 @@ import org.example.messenger.entity.Message;
 @AllArgsConstructor
 public class MessageDto {
 
-  private Long id;
+  private String id;
+
   private String text;
-  private Long senderId;
-  private Long chatId;
+
+  private Integer recId;
+
+  private UserDto sender;
 
   public static MessageDto of(Message message) {
     return MessageDto.builder()
         .id(message.getId())
-        .text(message.getMessageText().getText())
-        .senderId(message.getSender().getId())
-        .chatId(message.getChat().getId())
+        .text(message.getText())
+        .recId(message.getRecId())
+        .sender(UserDto.of(message.getSender()))
+        .build();
+  }
+
+  public static MessageDto previewOf(Message message) {
+    return MessageDto.builder()
+        .id(message.getId())
+        .text(message.getText())
+        .recId(message.getRecId())
+        .sender(UserDto.of(message.getSender()))
         .build();
   }
 

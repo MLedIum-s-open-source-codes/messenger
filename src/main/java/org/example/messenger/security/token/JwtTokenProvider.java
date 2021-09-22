@@ -1,6 +1,7 @@
 package org.example.messenger.security.token;
 
 import org.example.messenger.config.properties.JwtTokenProperties;
+import org.example.messenger.domain.model.User;
 import org.example.messenger.enumeration.TokenSubjectEnum;
 import org.example.messenger.security.CustomUserDetailsService;
 import com.nimbusds.oauth2.sdk.token.AccessTokenType;
@@ -48,18 +49,18 @@ public class JwtTokenProvider {
     log.info("Job token-scheduler run with delay {}", jwtTokenProperties.getTimeoutSec());
   }
 
-  public String createToken(String username) {
+  public String createToken(User user) {
 
-    return createToken(TokenSubjectEnum.AUTH.name(), username);
+    return createToken(TokenSubjectEnum.AUTH.name(), user);
   }
 
-  public String createToken(String subject, String username) {
+  public String createToken(String subject, User user) {
     long expirationTime = jwtTokenProperties.getExpiredTimeSecOtherToken();
     if (subject.equals(TokenSubjectEnum.AUTH.name())) {
       expirationTime = jwtTokenProperties.getExpiredTimeSecAuthToken();
     }
     String token = Jwts.builder()
-        .setId(username)
+        .setId(user.getUsername())
         .setSubject(subject)
         .setExpiration(Date.from(Instant.now().plusSeconds(expirationTime)))
         .setIssuer(jwtTokenProperties.getIssuer())
@@ -67,7 +68,7 @@ public class JwtTokenProvider {
         .signWith(SignatureAlgorithm.HS256,
             jwtTokenProperties.getSecretKey().getBytes(StandardCharsets.UTF_8))
         .compact();
-    log.info("Token {} '{}' created for user '{}'", subject, token, username);
+    log.info("Token {} '{}' created for user '{}'", subject, token, user.getUsername());
     return token;
   }
 

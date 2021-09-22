@@ -1,18 +1,16 @@
 package org.example.messenger.service;
 
 import org.example.messenger.domain.dto.MessageDto;
-import org.example.messenger.entity.Message;
+import org.example.messenger.domain.model.Message;
+
+import java.util.List;
 
 public interface MessageService {
 
-  Message create(MessageDto dto);
+  Message sendMessage(String from, String to, MessageDto dto);
 
-  Message get(Long id);
-
-  Message edit(MessageDto dto);
+  List<Message> getMessages(String userId, String interlocutorId);
 
   Message update(Message message);
-
-  void delete(Long id);
 
 }

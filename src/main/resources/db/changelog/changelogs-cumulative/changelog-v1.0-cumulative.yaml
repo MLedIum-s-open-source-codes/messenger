@@ -1,16 +1,1 @@
 databaseChangeLog:
-  # Users and Roles tables
-  - include:
-      file: "db/changelog/tables/2021-09-15-create-table-users.sql"
-  - include:
-      file: "db/changelog/tables/2021-09-15-create-table-roles.sql"
-  - include:
-      file: "db/changelog/tables/2021-09-15-create-table-users_roles.sql"
-
-  # Users and Roles data
-  - include:
-      file: "db/changelog/data/2021-09-15-insert-into-table-users.sql"
-  - include:
-      file: "db/changelog/data/2021-09-15-insert-into-table-roles.sql"
-  - include:
-      file: "db/changelog/data/2021-09-15-insert-into-table-users_roles.sql"
