@@ -29,13 +29,4 @@ public class MessageDto {
         .build();
   }
 
-  public static MessageDto previewOf(Message message) {
-    return MessageDto.builder()
-        .id(message.getId())
-        .text(message.getText())
-        .recId(message.getRecId())
-        .sender(UserDto.of(message.getSender()))
-        .build();
-  }
-
 }

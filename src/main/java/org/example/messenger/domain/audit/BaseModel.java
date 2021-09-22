@@ -1,6 +1,5 @@
-package org.example.messenger.domain.model;
+package org.example.messenger.domain.audit;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedBy;
@@ -12,21 +11,17 @@ import java.time.Instant;
 
 @Data
 @NoArgsConstructor
-public abstract class BaseModel {
+public class BaseModel {
 
-  @JsonIgnore
   @CreatedBy
-  private Long createdBy;
+  private String createdBy;
 
-  @JsonIgnore
   @CreatedDate
   private Instant createdDate;
 
-  @JsonIgnore
   @LastModifiedBy
-  private Long lastModifiedBy;
+  private String lastModifiedBy;
 
-  @JsonIgnore
   @LastModifiedDate
   private Instant lastModifiedDate;
 

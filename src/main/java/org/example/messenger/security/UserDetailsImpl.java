@@ -30,4 +30,8 @@ public class UserDetailsImpl implements UserDetails {
   private boolean enabled = false;
   private Map<String, Object> attributes;
 
+  public String getName() {
+    return username;
+  }
+
 }

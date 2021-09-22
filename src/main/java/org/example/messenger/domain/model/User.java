@@ -1,6 +1,7 @@
 package org.example.messenger.domain.model;
 
 import lombok.*;
+import org.example.messenger.domain.audit.BaseModel;
 import org.example.messenger.enumeration.RoleEnum;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
