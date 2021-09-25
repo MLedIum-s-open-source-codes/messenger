@@ -27,12 +27,4 @@ public enum RoleEnum {
     return getRoles().contains(RoleEnum.valueOf(name));
   }
 
-  public String getName() {
-    return name;
-  }
-
-  public String getDescription() {
-    return description;
-  }
-
 }

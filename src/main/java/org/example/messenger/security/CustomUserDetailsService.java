@@ -23,7 +23,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-    User user = userService.get(username);
+    User user = userService.getByUsername(username);
     log.info("User '{}' authorize successfully", user.getUsername());
 
     List<GrantedAuthority> grantedAuthorities = user.getRoles().stream()

@@ -7,42 +7,35 @@ import org.example.messenger.domain.model.Message;
 import org.example.messenger.repository.MessageRepository;
 import org.example.messenger.service.ChatService;
 import org.example.messenger.service.MessageService;
-import org.example.messenger.service.UserService;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class MessageServiceImpl implements MessageService {
 
   private final MessageRepository messageRepository;
-  private final UserService userService;
   private final ChatService chatService;
 
   @Override
   public Message sendMessage(String userId, String interlocutorId, MessageDto dto) {
     Chat chat = chatService.getOrCreateChat(userId, interlocutorId);
 
+    Integer newSeqId = chat.getLastSeqId() + 1;
+
     Message message = Message.builder()
-        .sender(userService.get(userId))
+        .senderId(userId)
         .text(dto.getText())
+        .seqId(newSeqId)
         .build();
 
     message = update(message);
 
     chat.getMessages().add(message);
+    chat.setLastSeqId(newSeqId);
 
     chatService.update(chat);
 
     return message;
-  }
-
-  @Override
-  public List<Message> getMessages(String userId, String interlocutorId) {
-    Chat chat = chatService.getOrCreateChat(userId, interlocutorId);
-
-    return chat.getMessages();
   }
 
   @Override

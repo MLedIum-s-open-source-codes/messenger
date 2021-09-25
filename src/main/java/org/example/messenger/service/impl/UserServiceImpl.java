@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public User getByUsername(String username) {
-    Optional<User> user = userRepository.findByUsername(username);
+    Optional<User> user = userRepository.findByUsernameIgnoreCase(username);
     if (user.isEmpty()) {
       throw new CustomException(ErrorTypeEnum.NOT_FOUND, format("User with username '%s' was not found", username));
     }

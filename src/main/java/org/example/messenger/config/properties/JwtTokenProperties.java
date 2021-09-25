@@ -1,20 +1,19 @@
 package org.example.messenger.config.properties;
 
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Data
 @Component
+@ConfigurationProperties("jwt.token")
 public class JwtTokenProperties {
 
-  String issuer = "Wwwwww";
+  private String issuer;
+  private String secretKey;
 
-  String secretKey = "123456789";
-
-  long expiredTimeSecAuthToken = 604800;
-  long expiredTimeSecOtherToken = 86400;
-
-  long timeoutSec = 86400;
+  private long expiredTimeSecAuthToken;
+  private long expiredTimeSecOtherToken;
+  private long timeoutSec;
 
 }

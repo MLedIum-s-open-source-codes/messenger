@@ -1,8 +1,8 @@
 package org.example.messenger.repository;
 
 import org.example.messenger.domain.model.Chat;
-import org.example.messenger.domain.model.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,10 +13,10 @@ public interface ChatRepository extends MongoRepository<Chat, String> {
 
   Optional<Chat> findById(String id);
 
-  Optional<Chat> findByUsersContains(User... users);
+  @Query("{ users: { $all: [ { $elemMatch: { userId: ?0 } },  { $elemMatch: { userId: ?1 } } ] } }")
+  Optional<Chat> findByUsersIds(String id1, String id2);
 
-  List<Chat> findAllByUsersContains(User... user);
-
-  boolean existsByUsersContains(User... users);
+  @Query(" { users: { $elemMatch: { userId: ?0 } } } ")
+  List<Chat> findAllByUserId(String id);
 
 }

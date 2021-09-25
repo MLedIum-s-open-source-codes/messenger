@@ -6,7 +6,10 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Data
 @Builder
@@ -19,10 +22,29 @@ public class Chat extends BaseModel {
   @Id
   private String id;
 
-  @DBRef
-  private List<User> users;
+  @Singular
+  private List<ChatUser> users;
 
   @DBRef
-  private List<Message> messages;
+  @Builder.Default
+  private List<Message> messages = new ArrayList<>();
+
+  @Builder.Default
+  private Integer lastSeqId = 0;
+
+  public ChatUser getInterlocutor(String userId) {
+    AtomicReference<ChatUser> interlocutor = new AtomicReference<>();
+    getUsers().forEach(chatUser -> {
+      if (!chatUser.getUserId().equals(userId)) {
+        interlocutor.set(chatUser);
+      }
+    });
+    return interlocutor.get();
+  }
+
+  public Optional<Message> getLastMessage() {
+
+    return getMessages().stream().sorted().findFirst();
+  }
 
 }

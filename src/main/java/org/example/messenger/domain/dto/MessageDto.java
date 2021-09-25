@@ -14,18 +14,18 @@ public class MessageDto {
 
   private String id;
 
+  private Integer seqId;
+
   private String text;
 
-  private Integer recId;
-
-  private UserDto sender;
+  private String senderId;
 
   public static MessageDto of(Message message) {
     return MessageDto.builder()
         .id(message.getId())
         .text(message.getText())
-        .recId(message.getRecId())
-        .sender(UserDto.of(message.getSender()))
+        .seqId(message.getSeqId())
+        .senderId(message.getSenderId())
         .build();
   }
 

@@ -18,25 +18,12 @@ public class ChatDto {
 
   private String id;
 
-  private String title;
-
-  private List<MessageDto> messages;
+  private MessageDto lastMessage;
 
   public static ChatDto of(Chat chat) {
-    User interlocutor = chat.getUsers().stream().findFirst().get();
     return ChatDto.builder()
-        .id(interlocutor.getId())
-        .title(interlocutor.getPublicName())
-        .messages(chat.getMessages() == null ? null : chat.getMessages().stream().map(MessageDto::of).collect(Collectors.toList()))
-        .build();
-  }
-
-  public static ChatDto previewOf(Chat chat) {
-    User interlocutor = chat.getUsers().stream().findFirst().get();
-    return ChatDto.builder()
-        .id(interlocutor.getId())
-        .title(interlocutor.getPublicName())
-        .messages(chat.getMessages() == null ? null : chat.getMessages().stream().limit(1).map(MessageDto::of).collect(Collectors.toList()))
+        .id(null)
+        .lastMessage(chat.getMessages() == null ? null : chat.getMessages().stream().sorted().limit(1).map(MessageDto::of).collect(Collectors.toList()).get(0))
         .build();
   }
 

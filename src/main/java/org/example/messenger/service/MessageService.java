@@ -9,8 +9,6 @@ public interface MessageService {
 
   Message sendMessage(String from, String to, MessageDto dto);
 
-  List<Message> getMessages(String userId, String interlocutorId);
-
   Message update(Message message);
 
 }

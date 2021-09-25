@@ -1,11 +1,13 @@
 package org.example.messenger.enumeration;
 
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Getter
 public enum ErrorTypeEnum {
 
 
@@ -21,23 +23,12 @@ public enum ErrorTypeEnum {
   UNKNOWN_ERROR("UNKNOWN ERROR", HttpStatus.INTERNAL_SERVER_ERROR),
   VALIDATION("VALIDATION ERROR", HttpStatus.BAD_REQUEST);
 
-
   private final String type;
   private final HttpStatus status;
 
   ErrorTypeEnum(String type, HttpStatus status) {
     this.type = type;
     this.status = status;
-  }
-
-  public String getType() {
-
-    return type;
-  }
-
-  public HttpStatus getStatus() {
-
-    return status;
   }
 
   public static List<ErrorTypeEnum> getAll() {

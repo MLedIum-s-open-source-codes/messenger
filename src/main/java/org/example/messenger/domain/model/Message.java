@@ -3,7 +3,6 @@ package org.example.messenger.domain.model;
 import lombok.*;
 import org.example.messenger.domain.audit.BaseModel;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
@@ -12,16 +11,20 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 @Document(collection = "messages")
 @EqualsAndHashCode(of = {"id"})
-public class Message extends BaseModel {
+public class Message extends BaseModel implements Comparable<Message> {
 
   @Id
   private String id;
 
-  @DBRef
-  private User sender;
+  private Integer seqId;
 
   private String text;
 
-  private Integer recId;
+  private String senderId;
+
+  @Override
+  public int compareTo(Message o) {
+    return o.getSeqId() - seqId; // In decreasing order of seqId
+  }
 
 }

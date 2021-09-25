@@ -1,20 +1,14 @@
 package org.example.messenger.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.example.messenger.domain.dto.MessageDto;
 import org.example.messenger.domain.model.Chat;
-import org.example.messenger.domain.model.Message;
-import org.example.messenger.domain.model.User;
+import org.example.messenger.domain.model.ChatUser;
 import org.example.messenger.repository.ChatRepository;
-import org.example.messenger.repository.MessageRepository;
-import org.example.messenger.service.MessageService;
 import org.example.messenger.service.ChatService;
-import org.example.messenger.service.UserService;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,56 +16,43 @@ import java.util.stream.Collectors;
 public class ChatServiceImpl implements ChatService {
 
   private final ChatRepository chatRepository;
-  private final MessageRepository messageRepository;
-  private final UserService userService;
 
   @Override
   public Chat getOrCreateChat(String userId, String interlocutorId) {
-    User user = userService.get(userId);
-    User interlocutor = userService.get(interlocutorId);
+    Optional<Chat> optional = getChat(userId, interlocutorId);
 
-    Chat chat;
-    if (chatRepository.existsByUsersContains(user, interlocutor)) {
-      chat = getChat(user, interlocutor);
-    } else {
-      chat = createChat(user, interlocutor);
-    }
+    if (optional.isEmpty())
+        return createChat(userId, interlocutorId);
 
-    if (chat.getMessages() == null) {
-      chat.setMessages(new ArrayList<>());
-    }
-
-    return chat;
+    return optional.get();
   }
 
-  private Chat createChat(User... users) {
+  private Chat createChat(String userId, String interlocutorId) {
+    ChatUser chatUser1 = ChatUser.builder().userId(userId).build();
+    ChatUser chatUser2 = ChatUser.builder().userId(interlocutorId).build();
+
     Chat chat = Chat.builder()
-        .users(new ArrayList<>(Arrays.asList(users)))
+        .user(chatUser1)
+        .user(chatUser2)
         .build();
 
     return update(chat);
   }
 
-  private Chat getChat(User... users) {
+  private Optional<Chat> getChat(String id1, String id2) {
 
-    return chatRepository.findByUsersContains(users).get();
+    return chatRepository.findByUsersIds(id1, id2);
   }
 
   @Override
   public List<Chat> getChatsByUserId(String userId) {
-    User user = userService.get(userId);
-
-    List<Chat> chats = chatRepository.findAllByUsersContains(user);
-
-    System.out.println(chats);
+    List<Chat> chats = chatRepository.findAllByUserId(userId);
 
     chats.forEach(chat ->
         chat.setUsers(
-            chat.getUsers().stream().filter(strUser -> !strUser.getId().equals(userId)).collect(Collectors.toList())
+            chat.getUsers().stream().filter(strUser -> !strUser.getUserId().equals(userId)).collect(Collectors.toList())
         )
     );
-
-    System.out.println(chats);
 
     return chats;
   }

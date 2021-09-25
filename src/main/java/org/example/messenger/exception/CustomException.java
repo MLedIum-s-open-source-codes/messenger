@@ -11,7 +11,6 @@ import java.time.Instant;
 @Getter
 public class CustomException extends RuntimeException {
 
-
   private final Instant timestamp;
   private final HttpStatus status;
   private final String error;
