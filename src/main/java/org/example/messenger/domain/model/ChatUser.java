@@ -14,7 +14,4 @@ public class ChatUser {
   @Builder.Default
   private Integer readSeqId = 0;
 
-  @Builder.Default
-  private Integer recSeqId = 0;
-
 }

@@ -20,17 +20,17 @@ public interface UserService {
 
   default void checkNotExistsUserWithUsername(String username) {
     if (existsUserWithUsername(username))
-      throw new CustomException(ErrorTypeEnum.ALREADY_EXIST, format("User with username '%s' already exist", username));
+        throw new CustomException(ErrorTypeEnum.ALREADY_EXIST, format("User with username '%s' already exist", username));
   }
 
   default void checkExistsUserWithId(String id) {
     if (!existsUserWithId(id))
-      throw new CustomException(ErrorTypeEnum.NOT_FOUND, format("User with id '%s' was not found", id));
+        throw new CustomException(ErrorTypeEnum.NOT_FOUND, format("User with id '%s' was not found", id));
   }
 
   default void checkExistsUserWithUsername(String username) {
     if (!existsUserWithUsername(username))
-      throw new CustomException(ErrorTypeEnum.NOT_FOUND, format("User with username '%s' was not found", username));
+        throw new CustomException(ErrorTypeEnum.NOT_FOUND, format("User with username '%s' was not found", username));
   }
 
   boolean existsUserWithId(String id);

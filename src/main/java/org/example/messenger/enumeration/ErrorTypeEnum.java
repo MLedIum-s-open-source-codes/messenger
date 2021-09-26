@@ -10,7 +10,6 @@ import java.util.stream.Stream;
 @Getter
 public enum ErrorTypeEnum {
 
-
   ALREADY_EXIST("ALREADY EXIST", HttpStatus.UNPROCESSABLE_ENTITY),
   ACCESS_DENIED("ACCESS DENIED", HttpStatus.FORBIDDEN),
   BAD_REQUEST("BAD REQUEST", HttpStatus.BAD_REQUEST),

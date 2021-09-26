@@ -5,6 +5,7 @@ import org.example.messenger.domain.model.Chat;
 import org.example.messenger.domain.model.ChatUser;
 import org.example.messenger.repository.ChatRepository;
 import org.example.messenger.service.ChatService;
+import org.example.messenger.service.UserService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 public class ChatServiceImpl implements ChatService {
 
   private final ChatRepository chatRepository;
+  private final UserService userService;
 
   @Override
   public Chat getOrCreateChat(String userId, String interlocutorId) {
@@ -28,6 +30,9 @@ public class ChatServiceImpl implements ChatService {
   }
 
   private Chat createChat(String userId, String interlocutorId) {
+    userService.checkExistsUserWithId(userId);
+    userService.checkExistsUserWithId(interlocutorId);
+
     ChatUser chatUser1 = ChatUser.builder().userId(userId).build();
     ChatUser chatUser2 = ChatUser.builder().userId(interlocutorId).build();
 

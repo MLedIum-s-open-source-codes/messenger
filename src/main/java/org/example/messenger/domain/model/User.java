@@ -7,8 +7,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Data
 @Builder
@@ -32,7 +31,39 @@ public class User extends BaseModel {
   private boolean enabled = false;
 
   @Builder.Default
+  private Integer lastMsgSeqId = 0;
+
+  @Builder.Default
+  private Integer recMsgSeqId = 0;
+
+  @Builder.Default
+  List<MessagePersonalSequence> messages = new ArrayList<>();
+
+  @Builder.Default
   private Set<String> roles = new HashSet<>();
+
+  public void addMessage(Message message) {
+    messages.add(
+        MessagePersonalSequence.builder()
+        .msgId(message.getId())
+        .seqId(++lastMsgSeqId)
+        .build()
+    );
+  }
+
+  public Optional<MessagePersonalSequence> getMessagePersonalSequenceByMsgId(String MPSMsgId) {
+
+    return messages.stream().filter(
+        mPS -> mPS.getMsgId().equals(MPSMsgId)
+    ).findFirst();
+  }
+
+  public Optional<MessagePersonalSequence> getMessagePersonalSequenceBySeqId(Integer MPSSeqId) {
+
+    return messages.stream().filter(
+        mPS -> mPS.getSeqId().equals(MPSSeqId)
+    ).findFirst();
+  }
 
   public void addRole(RoleEnum role) {
 

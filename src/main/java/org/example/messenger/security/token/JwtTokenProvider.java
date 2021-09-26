@@ -45,7 +45,8 @@ public class JwtTokenProvider {
     ScheduledExecutorService scheduledExecutorService
         = Executors.newScheduledThreadPool(1, r -> new Thread("token-scheduler"));
     scheduledExecutorService.scheduleWithFixedDelay(
-        this::cleanBlackList, 0, jwtTokenProperties.getTimeoutSec(), TimeUnit.SECONDS);
+        this::cleanBlackList, 0, jwtTokenProperties.getTimeoutSec(), TimeUnit.SECONDS
+    );
     log.info("Job token-scheduler run with delay {}", jwtTokenProperties.getTimeoutSec());
   }
 
@@ -76,7 +77,8 @@ public class JwtTokenProvider {
     validateToken(TokenSubjectEnum.AUTH.name(), token);
     UserDetails userDetails = userDetailsService.loadUserByUsername(getUsername(token));
     return new UsernamePasswordAuthenticationToken(
-        userDetails, null, userDetails.getAuthorities());
+        userDetails, null, userDetails.getAuthorities()
+    );
   }
 
   public String getToken(HttpServletRequest request) {

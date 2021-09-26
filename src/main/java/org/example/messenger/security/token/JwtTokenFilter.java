@@ -26,8 +26,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
   protected void doFilterInternal(
       HttpServletRequest request,
       HttpServletResponse response,
-      FilterChain chain)
-      throws ServletException, IOException {
+      FilterChain chain
+  ) throws ServletException, IOException {
     try {
       doTokenFilter(request);
     } catch (JwtException e) {

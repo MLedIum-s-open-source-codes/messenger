@@ -7,6 +7,7 @@ import org.example.messenger.domain.dto.MessageDto;
 import org.example.messenger.domain.dto.UserDto;
 import org.example.messenger.domain.model.Chat;
 import org.example.messenger.domain.model.Message;
+import org.example.messenger.domain.model.User;
 import org.example.messenger.domain.response.ChatHistory;
 import org.example.messenger.domain.response.DialogsPreload;
 import org.example.messenger.service.ChatService;
@@ -16,7 +17,6 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -39,20 +39,22 @@ public class ChatRestController {
 
     List<ChatDto> chats = new ArrayList<>();
     List<UserDto> users = getUsersData(chatsModels, userId, true);
+    User user = userService.get(userId);
 
     if (!chatsModels.isEmpty()) {
       chatsModels.forEach(chatModel -> {
         Optional<Message> lastMessage = chatModel.getLastMessage();
-        chats.add(ChatDto.builder()
-            .id(chatModel.getInterlocutor(userId).getUserId())
-            .lastMessage(lastMessage.isEmpty() ? null : MessageDto.of(lastMessage.get()))
-            .build()
-        );
+        lastMessage.ifPresent(message -> chats.add( //TODO Checking is proposed for deletion
+            ChatDto.builder()
+                .id(chatModel.getInterlocutor(userId).getUserId())
+                .lastMessage(MessageDto.of(message, user))
+                .build()
+        ));
       });
     }
 
     return ResponseEntity.ok(DialogsPreload.builder()
-        .me(UserDto.of(userService.get(userId)))
+        .me(UserDto.of(user))
         .chatsPreload(chats)
         .usersData(users)
         .build()
@@ -82,9 +84,14 @@ public class ChatRestController {
       @UserId String userId
   ) {
     Chat chatModel = chatService.getOrCreateChat(userId, interlocutorId);
+    User user = userService.get(userId);
 
-    List<MessageDto> messages = chatModel.getMessages() == null ? null : chatModel.getMessages().stream().map(MessageDto::of).collect(Collectors.toList());
-    List<UserDto> users = getUsersData(Arrays.asList(chatModel), userId, false);
+    List<MessageDto> messages = chatModel.getMessages() == null ? null
+        : chatModel.getMessages().stream().map(
+            message -> MessageDto.of(message, user)
+    ).collect(Collectors.toList());
+
+    List<UserDto> users = getUsersData(List.of(chatModel), userId, false);
 
     return ResponseEntity.ok(ChatHistory.builder()
         .me(UserDto.of(userService.get(userId)))

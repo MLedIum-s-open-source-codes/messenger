@@ -20,11 +20,4 @@ public class ChatDto {
 
   private MessageDto lastMessage;
 
-  public static ChatDto of(Chat chat) {
-    return ChatDto.builder()
-        .id(null)
-        .lastMessage(chat.getMessages() == null ? null : chat.getMessages().stream().sorted().limit(1).map(MessageDto::of).collect(Collectors.toList()).get(0))
-        .build();
-  }
-
 }

@@ -44,7 +44,7 @@ public class Chat extends BaseModel {
 
   public Optional<Message> getLastMessage() {
 
-    return getMessages().stream().sorted().findFirst();
+    return getMessages().stream().filter(message -> message.getChatSeqId().equals(lastSeqId)).findFirst();
   }
 
 }
