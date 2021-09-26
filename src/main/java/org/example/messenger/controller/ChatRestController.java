@@ -16,9 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -62,20 +60,26 @@ public class ChatRestController {
   }
 
   private List<UserDto> getUsersData(List<Chat> chatsModels, String userId, boolean isPreview) {
-    List<UserDto> users = new ArrayList<>();
+    Set<UserDto> users = new HashSet<>();
 
     if (!chatsModels.isEmpty()) {
       chatsModels.forEach(chatModel -> {
         users.add(UserDto.of(
             userService.get(chatModel.getInterlocutor(userId).getUserId())
         ));
-        //if (!isPreview) {
-        //  chatModel.getMessages();
-        //}
+        if (!isPreview) {
+          chatModel.getMessages().forEach(message -> {
+            users.addAll(
+                message.getForwardedMessagesSendersIds().stream().map(
+                    senderId -> UserDto.of(userService.get(senderId))
+                ).collect(Collectors.toSet())
+            );
+          });
+        }
       });
     }
 
-    return users;
+    return new ArrayList<>(users);
   }
 
   @GetMapping("/{interlocutorId}")

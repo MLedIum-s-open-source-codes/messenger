@@ -8,7 +8,10 @@ import org.example.messenger.domain.model.Message;
 import org.example.messenger.domain.model.MessagePersonalSequence;
 import org.example.messenger.domain.model.User;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -24,6 +27,8 @@ public class MessageDto {
 
   private MessageDto repliedMessage;
 
+  private List<MessageDto> forwardedMessages;
+
   public static MessageDto of(Message message, User user) {
     Optional<MessagePersonalSequence> MPS = user.getMessagePersonalSequenceByMsgId(message.getId());
     if (MPS.isPresent())
@@ -38,6 +43,9 @@ public class MessageDto {
         .text(message.getText())
         .senderId(message.getSenderId())
         .repliedMessage(message.getRepliedMessage() == null ? null : MessageDto.of(message.getRepliedMessage()))
+        .forwardedMessages(
+           message.getForwardedMessages() == null ? null : message.getForwardedMessages().stream().map(MessageDto::of).collect(Collectors.toList())
+        )
         .build();
   }
 

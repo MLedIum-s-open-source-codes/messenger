@@ -8,7 +8,9 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @Builder
@@ -32,5 +34,26 @@ public class Message extends BaseModel {
 
   @DBRef
   private Message repliedMessage;
+
+  @DBRef
+  @Builder.Default
+  private List<Message> forwardedMessages = new ArrayList<>();
+
+  public Set<String> getForwardedMessagesSendersIds() {
+    Set<String> sendersIds = new HashSet<>();
+
+    return getForwardedMessagesSendersIds(sendersIds);
+  }
+
+  public Set<String> getForwardedMessagesSendersIds(Set<String> sendersIds) {
+    sendersIds.add(senderId);
+    if (forwardedMessages != null) {
+      forwardedMessages.forEach(forwardedMessage -> {
+        forwardedMessage.getForwardedMessagesSendersIds(sendersIds);
+      });
+    }
+
+    return sendersIds;
+  }
 
 }

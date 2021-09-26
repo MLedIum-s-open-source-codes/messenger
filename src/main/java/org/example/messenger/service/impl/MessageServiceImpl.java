@@ -12,6 +12,8 @@ import org.example.messenger.service.MessageService;
 import org.example.messenger.service.UserService;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -28,7 +30,6 @@ public class MessageServiceImpl implements MessageService {
     User user = userService.get(userId);
     User interlocutor = userService.get(interlocutorId);
 
-    Integer newChatSeqId = chat.getLastSeqId() + 1;
 
     Optional<Message> repliedMessageOptional = Optional.empty();
     if (dto.getRepliedMessage() != null) {
@@ -38,14 +39,31 @@ public class MessageServiceImpl implements MessageService {
       }
     }
 
+
+    List<Message> forwardedMessages = new ArrayList<>();
+    if (dto.getForwardedMessages() != null) {
+      dto.getForwardedMessages().forEach(forwardedMessage -> {
+        Optional<MessagePersonalSequence> mPSOptional = user.getMessagePersonalSequenceBySeqId(forwardedMessage.getId());
+        if (mPSOptional.isPresent()) {
+          Optional<Message> msgOptional = messageRepository.findById(mPSOptional.get().getMsgId());
+          msgOptional.ifPresent(forwardedMessages::add);
+        }
+      });
+    }
+
+
+    Integer newChatSeqId = chat.getLastSeqId() + 1;
+
     Message message = Message.builder()
         .senderId(userId)
         .text(dto.getText())
         .chatSeqId(newChatSeqId)
         .repliedMessage(repliedMessageOptional.isEmpty() ? null : repliedMessageOptional.get())
+        .forwardedMessages(forwardedMessages)
         .build();
 
     message = update(message);
+
 
     user.addMessage(message);
     interlocutor.addMessage(message);
@@ -56,6 +74,7 @@ public class MessageServiceImpl implements MessageService {
     userService.update(user);
     userService.update(interlocutor);
     chatService.update(chat);
+
 
     message.setPersonalSequenceId(user.getLastMsgSeqId());
 
