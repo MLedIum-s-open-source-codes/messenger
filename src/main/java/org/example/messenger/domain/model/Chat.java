@@ -32,14 +32,14 @@ public class Chat extends BaseModel {
   @Builder.Default
   private Integer lastSeqId = 0;
 
-  public ChatUser getInterlocutor(String userId) {
-    AtomicReference<ChatUser> interlocutor = new AtomicReference<>();
-    getUsers().forEach(chatUser -> {
-      if (!chatUser.getUserId().equals(userId)) {
-        interlocutor.set(chatUser);
+  public ChatUser getInterlocutor(String currentUserId) {
+    for (ChatUser chatUser : getUsers()) {
+      if (!chatUser.getUserId().equals(currentUserId)) {
+        return chatUser;
       }
-    });
-    return interlocutor.get();
+    }
+
+    return users.get(0);
   }
 
   public Optional<Message> getLastMessage() {

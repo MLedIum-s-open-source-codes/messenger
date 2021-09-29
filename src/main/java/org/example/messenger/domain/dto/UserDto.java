@@ -1,15 +1,13 @@
 package org.example.messenger.domain.dto;
 
+import lombok.*;
 import org.example.messenger.domain.model.User;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(of = {"id"})
 public class UserDto {
 
   private String id;

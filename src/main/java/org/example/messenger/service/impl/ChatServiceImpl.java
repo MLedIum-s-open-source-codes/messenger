@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,14 +22,16 @@ public class ChatServiceImpl implements ChatService {
   public Chat getOrCreateChat(String userId, String interlocutorId) {
     Chat chat = getChat(userId, interlocutorId);
 
-    if (chat == null) {
+    if (chat == null)
       chat = createChat(userId, interlocutorId);
-    }
 
     return chat;
   }
 
   private Chat createChat(String userId, String interlocutorId) {
+    if (userId.equals(interlocutorId))
+        return createChat(userId);
+
     userService.checkExistsUserWithId(userId);
     userService.checkExistsUserWithId(interlocutorId);
 
@@ -45,9 +46,30 @@ public class ChatServiceImpl implements ChatService {
     return update(chat);
   }
 
+  private Chat createChat(String userId) {
+    userService.checkExistsUserWithId(userId);
+
+    ChatUser chatUser1 = ChatUser.builder().userId(userId).build();
+
+    Chat chat = Chat.builder().user(chatUser1).build();
+
+    return update(chat);
+  }
+
   @Override
   public Chat getChat(String userId, String interlocutorId) {
+    if (userId.equals(interlocutorId))
+        return getChat(userId);
+
     Optional<Chat> optional = chatRepository.findByUsersIds(userId, interlocutorId);
+    if (optional.isEmpty())
+        return null;
+
+    return optional.get();
+  }
+
+  private Chat getChat(String userId) {
+    Optional<Chat> optional = chatRepository.findByUserId(userId);
     if (optional.isEmpty())
         return null;
 
@@ -56,15 +78,8 @@ public class ChatServiceImpl implements ChatService {
 
   @Override
   public List<Chat> getChatsByUserId(String userId) {
-    List<Chat> chats = chatRepository.findAllByUserId(userId);
 
-    chats.forEach(chat ->
-        chat.setUsers(
-            chat.getUsers().stream().filter(strUser -> !strUser.getUserId().equals(userId)).collect(Collectors.toList())
-        )
-    );
-
-    return chats;
+    return chatRepository.findAllByUserId(userId);
   }
 
   @Override

@@ -87,11 +87,15 @@ public class ChatRestController {
       @PathVariable String interlocutorId,
       @UserId String userId
   ) {
+    if (interlocutorId.equals(userId)) {
+
+    }
     Chat chatModel = chatService.getChat(userId, interlocutorId);
     User user = userService.get(userId);
+    User interlocutor = userService.get(interlocutorId);
 
     List<MessageDto> messages = null;
-    List<UserDto> users = null;
+    List<UserDto> users;
 
     if (chatModel != null) {
       messages = chatModel.getMessages() == null ? null
@@ -100,6 +104,8 @@ public class ChatRestController {
       ).collect(Collectors.toList());
 
       users = getUsersData(List.of(chatModel), userId, false);
+    } else {
+      users = new ArrayList<>(List.of(UserDto.of(interlocutor)));
     }
 
 
