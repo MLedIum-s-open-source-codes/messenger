@@ -25,32 +25,13 @@ public class MessageServiceImpl implements MessageService {
   private final UserService userService;
 
   @Override
-  public Message sendMessage(String userId, String interlocutorId, MessageDto dto) { //TODO Shorten the code in the method
+  public Message sendMessage(String userId, String interlocutorId, MessageDto dto) {
     Chat chat = chatService.getOrCreateChat(userId, interlocutorId);
     User user = userService.get(userId);
     User interlocutor = userService.get(interlocutorId);
 
-
-    Optional<Message> repliedMessageOptional = Optional.empty();
-    if (dto.getRepliedMessage() != null) {
-      Optional<MessagePersonalSequence> mPSOptional = user.getMessagePersonalSequenceBySeqId(dto.getRepliedMessage().getId());
-      if (mPSOptional.isPresent()) {
-        repliedMessageOptional = messageRepository.findById(mPSOptional.get().getMsgId());
-      }
-    }
-
-
-    List<Message> forwardedMessages = new ArrayList<>();
-    if (dto.getForwardedMessages() != null) {
-      dto.getForwardedMessages().forEach(forwardedMessage -> {
-        Optional<MessagePersonalSequence> mPSOptional = user.getMessagePersonalSequenceBySeqId(forwardedMessage.getId());
-        if (mPSOptional.isPresent()) {
-          Optional<Message> msgOptional = messageRepository.findById(mPSOptional.get().getMsgId());
-          msgOptional.ifPresent(forwardedMessages::add);
-        }
-      });
-    }
-
+    Message repliedMessage = getRepliedMessage(dto, chat, user);
+    List<Message> forwardedMessages = getForwardedMessages(dto, user);
 
     Integer newChatSeqId = chat.getLastSeqId() + 1;
 
@@ -58,12 +39,10 @@ public class MessageServiceImpl implements MessageService {
         .senderId(userId)
         .text(dto.getText())
         .chatSeqId(newChatSeqId)
-        .repliedMessage(repliedMessageOptional.isEmpty() ? null : repliedMessageOptional.get())
+        .repliedMessage(repliedMessage)
         .forwardedMessages(forwardedMessages)
         .build();
-
     message = update(message);
-
 
     user.addMessage(message);
     interlocutor.addMessage(message);
@@ -75,10 +54,51 @@ public class MessageServiceImpl implements MessageService {
     userService.update(interlocutor);
     chatService.update(chat);
 
-
     message.setPersonalSequenceId(user.getLastMsgSeqId());
 
     return message;
+  }
+
+  private Message getRepliedMessage(MessageDto dto, Chat chat, User user) {
+    if (dto.getRepliedMessage() == null)
+        return null;
+
+    Optional<MessagePersonalSequence> mPSOptional = user.getMessagePersonalSequenceBySeqId(dto.getRepliedMessage().getId());
+    if (mPSOptional.isEmpty())
+        return null;
+
+    Optional<Message> optional = messageRepository.findById(mPSOptional.get().getMsgId());
+    if (optional.isEmpty())
+        return null;
+
+    if (!chat.getMessages().contains(optional.get())) {
+
+      if (dto.getForwardedMessages() == null)
+          dto.setForwardedMessages(new ArrayList<>());
+
+      dto.getForwardedMessages().add(dto.getRepliedMessage());
+      return null;
+    }
+
+    return optional.get();
+  }
+
+  private List<Message> getForwardedMessages(MessageDto dto, User user) {
+    if (dto.getForwardedMessages() == null)
+        return null;
+
+    List<Message> forwardedMessages = new ArrayList<>();
+
+    dto.getForwardedMessages().forEach(forwardedMessage -> {
+      Optional<MessagePersonalSequence> mPSOptional = user.getMessagePersonalSequenceBySeqId(forwardedMessage.getId());
+      if (mPSOptional.isEmpty())
+          return;
+
+      Optional<Message> msgOptional = messageRepository.findById(mPSOptional.get().getMsgId());
+      msgOptional.ifPresent(forwardedMessages::add);
+    });
+
+    return forwardedMessages;
   }
 
   @Override

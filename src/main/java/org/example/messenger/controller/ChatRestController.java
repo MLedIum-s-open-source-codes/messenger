@@ -42,7 +42,7 @@ public class ChatRestController {
     if (!chatsModels.isEmpty()) {
       chatsModels.forEach(chatModel -> {
         Optional<Message> lastMessage = chatModel.getLastMessage();
-        lastMessage.ifPresent(message -> chats.add( //TODO Checking is proposed for deletion
+        lastMessage.ifPresent(message -> chats.add(
             ChatDto.builder()
                 .id(chatModel.getInterlocutor(userId).getUserId())
                 .lastMessage(MessageDto.of(message, user))
@@ -87,15 +87,21 @@ public class ChatRestController {
       @PathVariable String interlocutorId,
       @UserId String userId
   ) {
-    Chat chatModel = chatService.getOrCreateChat(userId, interlocutorId);
+    Chat chatModel = chatService.getChat(userId, interlocutorId);
     User user = userService.get(userId);
 
-    List<MessageDto> messages = chatModel.getMessages() == null ? null
-        : chatModel.getMessages().stream().map(
-            message -> MessageDto.of(message, user)
-    ).collect(Collectors.toList());
+    List<MessageDto> messages = null;
+    List<UserDto> users = null;
 
-    List<UserDto> users = getUsersData(List.of(chatModel), userId, false);
+    if (chatModel != null) {
+      messages = chatModel.getMessages() == null ? null
+          : chatModel.getMessages().stream().map(
+          message -> MessageDto.of(message, user)
+      ).collect(Collectors.toList());
+
+      users = getUsersData(List.of(chatModel), userId, false);
+    }
+
 
     return ResponseEntity.ok(ChatHistory.builder()
         .me(UserDto.of(userService.get(userId)))

@@ -31,8 +31,18 @@ public class MessageDto {
 
   public static MessageDto of(Message message, User user) {
     Optional<MessagePersonalSequence> MPS = user.getMessagePersonalSequenceByMsgId(message.getId());
-    if (MPS.isPresent())
-      message.setPersonalSequenceId(MPS.get().getSeqId());
+    MPS.ifPresent(
+        messagePersonalSequence -> message.setPersonalSequenceId(messagePersonalSequence.getSeqId())
+    );
+
+    Message repliedMessage = message.getRepliedMessage();
+    if (repliedMessage != null) {
+      MPS = user.getMessagePersonalSequenceByMsgId(repliedMessage.getId());
+      MPS.ifPresent(
+          messagePersonalSequence -> repliedMessage.setPersonalSequenceId(messagePersonalSequence.getSeqId())
+      );
+    }
+
 
     return of(message);
   }

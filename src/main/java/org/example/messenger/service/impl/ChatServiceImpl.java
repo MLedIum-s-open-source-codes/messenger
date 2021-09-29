@@ -21,12 +21,13 @@ public class ChatServiceImpl implements ChatService {
 
   @Override
   public Chat getOrCreateChat(String userId, String interlocutorId) {
-    Optional<Chat> optional = getChat(userId, interlocutorId);
+    Chat chat = getChat(userId, interlocutorId);
 
-    if (optional.isEmpty())
-        return createChat(userId, interlocutorId);
+    if (chat == null) {
+      chat = createChat(userId, interlocutorId);
+    }
 
-    return optional.get();
+    return chat;
   }
 
   private Chat createChat(String userId, String interlocutorId) {
@@ -44,9 +45,13 @@ public class ChatServiceImpl implements ChatService {
     return update(chat);
   }
 
-  private Optional<Chat> getChat(String id1, String id2) {
+  @Override
+  public Chat getChat(String userId, String interlocutorId) {
+    Optional<Chat> optional = chatRepository.findByUsersIds(userId, interlocutorId);
+    if (optional.isEmpty())
+        return null;
 
-    return chatRepository.findByUsersIds(id1, id2);
+    return optional.get();
   }
 
   @Override

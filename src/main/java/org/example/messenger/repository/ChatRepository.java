@@ -16,7 +16,7 @@ public interface ChatRepository extends MongoRepository<Chat, String> {
   @Query("{ users: { $all: [ { $elemMatch: { userId: ?0 } },  { $elemMatch: { userId: ?1 } } ] } }")
   Optional<Chat> findByUsersIds(String id1, String id2);
 
-  @Query(" { users: { $elemMatch: { userId: ?0 } }, messages: { $not: { $size: 0 } } } ") //TODO Instead of additional verification, remove the creation of a chat without sending the first message in ChatService
+  @Query("{ users: { $elemMatch: { userId: ?0 } } }")
   List<Chat> findAllByUserId(String id);
 
 }
