@@ -1,21 +1,20 @@
 package org.example.messenger.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.example.messenger.domain.dto.MessageDto;
-import org.example.messenger.domain.model.Chat;
-import org.example.messenger.domain.model.Message;
-import org.example.messenger.domain.model.MessagePersonalSequence;
-import org.example.messenger.domain.model.User;
+import org.example.messenger.domain.model.*;
+import org.example.messenger.enumeration.ErrorTypeEnum;
+import org.example.messenger.exception.CustomException;
 import org.example.messenger.repository.MessageRepository;
 import org.example.messenger.service.ChatService;
 import org.example.messenger.service.MessageService;
 import org.example.messenger.service.UserService;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class MessageServiceImpl implements MessageService {
@@ -25,7 +24,16 @@ public class MessageServiceImpl implements MessageService {
   private final UserService userService;
 
   @Override
-  public Message sendMessage(String userId, String interlocutorId, MessageDto dto) {
+  public Message get(String id) {
+    Optional<Message> optional = messageRepository.findById(id);
+    if (optional.isEmpty())
+        throw new CustomException(ErrorTypeEnum.NOT_FOUND, "Message was not found");
+
+    return optional.get();
+  }
+
+  @Override
+  public Message send(String userId, String interlocutorId, MessageDto dto) {
     Chat chat = chatService.getOrCreateChat(userId, interlocutorId);
     User user = userService.get(userId);
     User interlocutor = userService.get(interlocutorId);
@@ -45,13 +53,13 @@ public class MessageServiceImpl implements MessageService {
     message = update(message);
 
     user.addMessage(message);
-    interlocutor.addMessage(message);
-
-    chat.getMessages().add(message);
-    chat.setLastSeqId(newChatSeqId);
-
     userService.update(user);
+
+    interlocutor.addMessage(message);
     userService.update(interlocutor);
+
+    chat.getMessages().add(MessageRef.builder().msgId(message.getId()).seqId(newChatSeqId).build());
+    chat.setLastSeqId(newChatSeqId);
     chatService.update(chat);
 
     message.setPersonalSequenceId(user.getLastMsgSeqId());
@@ -63,7 +71,7 @@ public class MessageServiceImpl implements MessageService {
     if (dto.getRepliedMessage() == null)
         return null;
 
-    Optional<MessagePersonalSequence> mPSOptional = user.getMessagePersonalSequenceBySeqId(dto.getRepliedMessage().getId());
+    Optional<MessageRef> mPSOptional = user.getMessagePersonalSequenceBySeqId(dto.getRepliedMessage().getId());
     if (mPSOptional.isEmpty())
         return null;
 
@@ -71,7 +79,7 @@ public class MessageServiceImpl implements MessageService {
     if (optional.isEmpty())
         return null;
 
-    if (!chat.getMessages().contains(optional.get())) {
+    if (!chat.containsMessageWithId(optional.get().getId())) {
 
       if (dto.getForwardedMessages() == null)
           dto.setForwardedMessages(new ArrayList<>());
@@ -87,10 +95,10 @@ public class MessageServiceImpl implements MessageService {
     if (dto.getForwardedMessages() == null)
         return null;
 
-    List<Message> forwardedMessages = new ArrayList<>();
+    Set<Message> forwardedMessages = new HashSet<>();
 
     dto.getForwardedMessages().forEach(forwardedMessage -> {
-      Optional<MessagePersonalSequence> mPSOptional = user.getMessagePersonalSequenceBySeqId(forwardedMessage.getId());
+      Optional<MessageRef> mPSOptional = user.getMessagePersonalSequenceBySeqId(forwardedMessage.getId());
       if (mPSOptional.isEmpty())
           return;
 
@@ -98,7 +106,7 @@ public class MessageServiceImpl implements MessageService {
       msgOptional.ifPresent(forwardedMessages::add);
     });
 
-    return forwardedMessages;
+    return new ArrayList<>(forwardedMessages);
   }
 
   @Override

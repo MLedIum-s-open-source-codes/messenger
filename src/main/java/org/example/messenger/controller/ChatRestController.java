@@ -5,12 +5,11 @@ import org.example.messenger.annotation.UserId;
 import org.example.messenger.domain.dto.ChatDto;
 import org.example.messenger.domain.dto.MessageDto;
 import org.example.messenger.domain.dto.UserDto;
-import org.example.messenger.domain.model.Chat;
-import org.example.messenger.domain.model.Message;
-import org.example.messenger.domain.model.User;
+import org.example.messenger.domain.model.*;
 import org.example.messenger.domain.response.ChatHistory;
 import org.example.messenger.domain.response.DialogsPreload;
 import org.example.messenger.service.ChatService;
+import org.example.messenger.service.MessageService;
 import org.example.messenger.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -26,28 +25,31 @@ import java.util.stream.Collectors;
 public class ChatRestController {
 
   private final ChatService chatService;
+  private final MessageService messageService;
   private final UserService userService;
 
   @GetMapping
   public ResponseEntity<DialogsPreload> getChatsPreviews(
       @UserId String userId
   ) {
-
     List<Chat> chatsModels = chatService.getChatsByUserId(userId);
 
     List<ChatDto> chats = new ArrayList<>();
-    List<UserDto> users = getUsersData(chatsModels, userId, true);
+    List<UserDto> users = getUploadedUsersIds(chatsModels, userId).stream().map(uploadedUserId -> UserDto.of(userService.get(uploadedUserId))).collect(Collectors.toList());
     User user = userService.get(userId);
 
     if (!chatsModels.isEmpty()) {
       chatsModels.forEach(chatModel -> {
-        Optional<Message> lastMessage = chatModel.getLastMessage();
-        lastMessage.ifPresent(message -> chats.add(
-            ChatDto.builder()
-                .id(chatModel.getInterlocutor(userId).getUserId())
-                .lastMessage(MessageDto.of(message, user))
-                .build()
-        ));
+        Optional<MessageRef> lastMessageRef = chatModel.getLastMessageRef();
+        lastMessageRef.ifPresent(messageRef -> {
+          Message message = messageService.get(messageRef.getMsgId());
+          Optional<ChatUser> interlocutor = chatModel.getInterlocutor(userId);
+          chats.add(ChatDto.builder()
+              .id(interlocutor.isPresent() ? interlocutor.get().getUserId() : userId)
+              .lastMessage(MessageDto.of(message, user))
+              .build()
+          );
+        });
       });
     }
 
@@ -59,27 +61,32 @@ public class ChatRestController {
     );
   }
 
-  private List<UserDto> getUsersData(List<Chat> chatsModels, String userId, boolean isPreview) {
-    Set<UserDto> users = new HashSet<>();
+  private Set<String> getUploadedUsersIds(List<Chat> chats, String userId) {
+    Set<String> uploadedUserId = new HashSet<>();
 
-    if (!chatsModels.isEmpty()) {
-      chatsModels.forEach(chatModel -> {
-        users.add(UserDto.of(
-            userService.get(chatModel.getInterlocutor(userId).getUserId())
-        ));
-        if (!isPreview) {
-          chatModel.getMessages().forEach(message -> {
-            users.addAll(
-                message.getForwardedMessagesSendersIds().stream().map(
-                    senderId -> UserDto.of(userService.get(senderId))
-                ).collect(Collectors.toSet())
-            );
-          });
-        }
+    if (!chats.isEmpty()) {
+      chats.forEach(chat -> {
+        uploadedUserId.addAll(getUploadedUsersIds(chat, userId, true));
       });
     }
 
-    return new ArrayList<>(users);
+    return uploadedUserId;
+  }
+
+  private Set<String> getUploadedUsersIds(Chat chat, String userId, boolean isPreview) { // FIXME optimize
+    Set<String> uploadedUserId = new HashSet<>();
+
+    if (chat != null) {
+        Optional<ChatUser> interlocutor = chat.getInterlocutor(userId);
+        interlocutor.ifPresent(chatUser -> uploadedUserId.add(chatUser.getUserId()));
+        if (!isPreview) { // FIXME optimize
+          chat.getMessages().forEach(messageRef ->
+              uploadedUserId.addAll(messageService.get(messageRef.getMsgId()).getForwardedMessagesSendersIds())
+          );
+        }
+    }
+
+    return uploadedUserId;
   }
 
   @GetMapping("/{interlocutorId}")
@@ -87,25 +94,22 @@ public class ChatRestController {
       @PathVariable String interlocutorId,
       @UserId String userId
   ) {
-    if (interlocutorId.equals(userId)) {
-
-    }
     Chat chatModel = chatService.getChat(userId, interlocutorId);
     User user = userService.get(userId);
     User interlocutor = userService.get(interlocutorId);
 
     List<MessageDto> messages = null;
-    List<UserDto> users;
+    List<UserDto> users = new ArrayList<>(List.of(UserDto.of(interlocutor)));
 
     if (chatModel != null) {
-      messages = chatModel.getMessages() == null ? null
-          : chatModel.getMessages().stream().map(
-          message -> MessageDto.of(message, user)
-      ).collect(Collectors.toList());
+      if (chatModel.getMessages() != null) { // FIXME optimize
+        //chatModel.setMessages(chatModel.getMessages().stream().sorted((o1, o2) -> o2.getSeqId() - o1.getSeqId()).limit(30).collect(Collectors.toList()));
+        messages = chatModel.getMessages().stream().map(
+            messageRef -> MessageDto.of(messageService.get(messageRef.getMsgId()), user)
+        ).collect(Collectors.toList());
+      }
 
-      users = getUsersData(List.of(chatModel), userId, false);
-    } else {
-      users = new ArrayList<>(List.of(UserDto.of(interlocutor)));
+      users = getUploadedUsersIds(chatModel, userId, false).stream().map(usrId -> UserDto.of(userService.get(usrId))).collect(Collectors.toList());
     }
 
 

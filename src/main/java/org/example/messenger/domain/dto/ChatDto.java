@@ -1,9 +1,6 @@
 package org.example.messenger.domain.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.example.messenger.domain.model.Chat;
 import org.example.messenger.domain.model.User;
 
@@ -14,6 +11,7 @@ import java.util.stream.Collectors;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(of = {"id"})
 public class ChatDto {
 
   private String id;

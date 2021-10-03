@@ -24,7 +24,7 @@ public class MessageRestController {
   ) {
 
     return ResponseEntity.ok(MessageDto.of(
-        messageService.sendMessage(userId, interlocutorId, dto)
+        messageService.send(userId, interlocutorId, dto)
     ));
   }
 

@@ -14,7 +14,7 @@ import java.util.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "users")
-@EqualsAndHashCode(of = {"id"})
+@EqualsAndHashCode(of = {"id"}, callSuper = false)
 public class User extends BaseModel {
 
   @Id
@@ -37,28 +37,28 @@ public class User extends BaseModel {
   private Integer recMsgSeqId = 0;
 
   @Builder.Default
-  List<MessagePersonalSequence> messages = new ArrayList<>();
+  List<MessageRef> messages = new ArrayList<>();
 
   @Builder.Default
   private Set<String> roles = new HashSet<>();
 
   public void addMessage(Message message) {
     messages.add(
-        MessagePersonalSequence.builder()
+        MessageRef.builder()
         .msgId(message.getId())
         .seqId(++lastMsgSeqId)
         .build()
     );
   }
 
-  public Optional<MessagePersonalSequence> getMessagePersonalSequenceByMsgId(String MPSMsgId) {
+  public Optional<MessageRef> getMessagePersonalSequenceByMsgId(String MPSMsgId) {
 
     return messages.stream().filter(
         mPS -> mPS.getMsgId().equals(MPSMsgId)
     ).findFirst();
   }
 
-  public Optional<MessagePersonalSequence> getMessagePersonalSequenceBySeqId(Integer MPSSeqId) {
+  public Optional<MessageRef> getMessagePersonalSequenceBySeqId(Integer MPSSeqId) {
 
     return messages.stream().filter(
         mPS -> mPS.getSeqId().equals(MPSSeqId)
@@ -71,9 +71,7 @@ public class User extends BaseModel {
   }
 
   public void removeRole(RoleEnum role) {
-    if (this.roles.contains(role.getName())) {
-      this.roles.remove(role.getName());
-    }
+    this.roles.remove(role.getName());
   }
 
   public boolean isAdmin() {

@@ -59,7 +59,7 @@ public class ChatServiceImpl implements ChatService {
   @Override
   public Chat getChat(String userId, String interlocutorId) {
     if (userId.equals(interlocutorId))
-        return getChat(userId);
+        return getChatByUserId(userId);
 
     Optional<Chat> optional = chatRepository.findByUsersIds(userId, interlocutorId);
     if (optional.isEmpty())
@@ -68,7 +68,7 @@ public class ChatServiceImpl implements ChatService {
     return optional.get();
   }
 
-  private Chat getChat(String userId) {
+  private Chat getChatByUserId(String userId) {
     Optional<Chat> optional = chatRepository.findByUserId(userId);
     if (optional.isEmpty())
         return null;

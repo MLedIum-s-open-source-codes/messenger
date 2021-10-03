@@ -40,27 +40,26 @@ public class UserServiceImpl implements UserService {
   @Override
   public User get(String id) {
     Optional<User> user = userRepository.findById(id);
-    if (user.isEmpty()) {
-      throw new CustomException(ErrorTypeEnum.NOT_FOUND, format("User with id '%s' was not found", id));
-    }
+    if (user.isEmpty())
+        throw new CustomException(ErrorTypeEnum.NOT_FOUND, format("User with id '%s' was not found", id));
+
     return user.get();
   }
 
   @Override
   public User getByUsername(String username) {
     Optional<User> user = userRepository.findByUsernameIgnoreCase(username);
-    if (user.isEmpty()) {
-      throw new CustomException(ErrorTypeEnum.NOT_FOUND, format("User with username '%s' was not found", username));
-    }
+    if (user.isEmpty())
+        throw new CustomException(ErrorTypeEnum.NOT_FOUND, format("User with username '%s' was not found", username));
+
     return user.get();
   }
 
   @Override
   public User edit(UserDto userDto) {
     User user = get(userDto.getId());
-    if (userDto.getName() != null) {
-      user.setUsername(userDto.getName());
-    }
+    if (userDto.getName() != null)
+        user.setUsername(userDto.getName());
 
     return update(user);
   }

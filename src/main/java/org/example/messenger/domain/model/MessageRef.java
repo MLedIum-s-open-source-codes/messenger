@@ -6,8 +6,8 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(of = {"msgId", "seqId"})
-public class MessagePersonalSequence {
+@EqualsAndHashCode(of = {"msgId"})
+public class MessageRef {
 
   private String msgId;
 

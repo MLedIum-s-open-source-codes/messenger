@@ -97,7 +97,7 @@ public class JwtTokenProvider {
     checkSubjectToken(subject, token);
     checkValidityPeriod(token);
     checkContainsInTokenBlackList(token);
-    log.info("JWT token {} is valid", token);
+    log.debug("JWT token {} is valid", token);
   }
 
   private void checkSubjectToken(String subject, String token) {

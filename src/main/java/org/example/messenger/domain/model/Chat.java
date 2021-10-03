@@ -3,20 +3,18 @@ package org.example.messenger.domain.model;
 import lombok.*;
 import org.example.messenger.domain.audit.BaseModel;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "chats")
-@EqualsAndHashCode(of = {"id"})
+@EqualsAndHashCode(of = {"id"}, callSuper = false)
 public class Chat extends BaseModel {
 
   @Id
@@ -25,26 +23,34 @@ public class Chat extends BaseModel {
   @Singular
   private List<ChatUser> users;
 
-  @DBRef
   @Builder.Default
-  private List<Message> messages = new ArrayList<>();
+  private List<MessageRef> messages = new ArrayList<>();
 
   @Builder.Default
   private Integer lastSeqId = 0;
 
-  public ChatUser getInterlocutor(String currentUserId) {
+  public Optional<ChatUser> getInterlocutor(String currentUserId) {
     for (ChatUser chatUser : getUsers()) {
       if (!chatUser.getUserId().equals(currentUserId)) {
-        return chatUser;
+        return Optional.of(chatUser);
       }
     }
 
-    return users.get(0);
+    return Optional.empty();
   }
 
-  public Optional<Message> getLastMessage() {
+  public Optional<MessageRef> getLastMessageRef() {
 
-    return getMessages().stream().filter(message -> message.getChatSeqId().equals(lastSeqId)).findFirst();
+    return getMessages().stream().filter(message -> message.getSeqId().equals(lastSeqId)).findFirst();
+  }
+
+  public boolean containsMessageWithId(String id) {
+    for (MessageRef chatMessage : messages) {
+      if (chatMessage.getMsgId().equals(id))
+          return true;
+    }
+
+    return false;
   }
 
 }

@@ -1,14 +1,10 @@
 package org.example.messenger.domain.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.example.messenger.domain.model.Message;
-import org.example.messenger.domain.model.MessagePersonalSequence;
+import org.example.messenger.domain.model.MessageRef;
 import org.example.messenger.domain.model.User;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -17,6 +13,7 @@ import java.util.stream.Collectors;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(of = {"id"})
 public class MessageDto {
 
   private Integer id;
@@ -30,7 +27,7 @@ public class MessageDto {
   private List<MessageDto> forwardedMessages;
 
   public static MessageDto of(Message message, User user) {
-    Optional<MessagePersonalSequence> MPS = user.getMessagePersonalSequenceByMsgId(message.getId());
+    Optional<MessageRef> MPS = user.getMessagePersonalSequenceByMsgId(message.getId());
     MPS.ifPresent(
         messagePersonalSequence -> message.setPersonalSequenceId(messagePersonalSequence.getSeqId())
     );
@@ -42,7 +39,6 @@ public class MessageDto {
           messagePersonalSequence -> repliedMessage.setPersonalSequenceId(messagePersonalSequence.getSeqId())
       );
     }
-
 
     return of(message);
   }
