@@ -5,6 +5,7 @@ import org.example.messenger.domain.audit.BaseModel;
 import org.example.messenger.enumeration.RoleEnum;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.*;
@@ -41,6 +42,9 @@ public class User extends BaseModel {
 
   @Builder.Default
   private Set<String> roles = new HashSet<>();
+
+  @DBRef
+  private MediaFile avatar;
 
   public void addMessage(Message message) {
     messages.add(

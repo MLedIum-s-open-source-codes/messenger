@@ -2,6 +2,7 @@ package org.example.messenger.domain.model;
 
 import lombok.*;
 import org.example.messenger.domain.audit.BaseModel;
+import org.example.messenger.enumeration.ChatTypeEnum;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -28,6 +29,9 @@ public class Chat extends BaseModel {
 
   @Builder.Default
   private Integer lastSeqId = 0;
+
+  @Builder.Default
+  private ChatTypeEnum type = ChatTypeEnum.DIRECT_MESSAGE;
 
   public Optional<ChatUser> getInterlocutor(String currentUserId) {
     for (ChatUser chatUser : getUsers()) {

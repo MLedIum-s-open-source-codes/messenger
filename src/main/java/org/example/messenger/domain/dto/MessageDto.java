@@ -26,6 +26,8 @@ public class MessageDto {
 
   private List<MessageDto> forwardedMessages;
 
+  private List<MediaFileDto> attachedFiles;
+
   public static MessageDto of(Message message, User user) {
     Optional<MessageRef> MPS = user.getMessagePersonalSequenceByMsgId(message.getId());
     MPS.ifPresent(
@@ -48,9 +50,14 @@ public class MessageDto {
         .id(message.getPersonalSequenceId() == null ? null : message.getPersonalSequenceId())
         .text(message.getText())
         .senderId(message.getSenderId())
-        .repliedMessage(message.getRepliedMessage() == null ? null : MessageDto.of(message.getRepliedMessage()))
-        .forwardedMessages(
-           message.getForwardedMessages() == null ? null : message.getForwardedMessages().stream().map(MessageDto::of).collect(Collectors.toList())
+        .repliedMessage(message.getRepliedMessage() == null ? null :
+            MessageDto.of(message.getRepliedMessage())
+        )
+        .forwardedMessages(message.getForwardedMessages() == null ? null :
+            message.getForwardedMessages().stream().map(MessageDto::of).collect(Collectors.toList())
+        )
+        .attachedFiles(message.getAttachedFiles() == null ? null :
+            message.getAttachedFiles().stream().map(MediaFileDto::of).collect(Collectors.toList())
         )
         .build();
   }

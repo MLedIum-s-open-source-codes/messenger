@@ -14,10 +14,13 @@ public class UserDto {
 
   private String name;
 
+  private MediaFileDto avatar;
+
   public static UserDto of(User user) {
     return UserDto.builder()
         .id(user.getId())
         .name(user.getPublicName())
+        .avatar(MediaFileDto.of(user.getAvatar()))
         .build();
   }
 

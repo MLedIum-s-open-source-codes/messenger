@@ -8,6 +8,7 @@ import org.example.messenger.enumeration.ErrorTypeEnum;
 import org.example.messenger.exception.CustomException;
 import org.example.messenger.repository.MessageRepository;
 import org.example.messenger.service.ChatService;
+import org.example.messenger.service.MediaService;
 import org.example.messenger.service.MessageService;
 import org.example.messenger.service.UserService;
 import org.springframework.stereotype.Service;
@@ -22,15 +23,7 @@ public class MessageServiceImpl implements MessageService {
   private final MessageRepository messageRepository;
   private final ChatService chatService;
   private final UserService userService;
-
-  @Override
-  public Message get(String id) {
-    Optional<Message> optional = messageRepository.findById(id);
-    if (optional.isEmpty())
-        throw new CustomException(ErrorTypeEnum.NOT_FOUND, "Message was not found");
-
-    return optional.get();
-  }
+  private final MediaService mediaService;
 
   @Override
   public Message send(String userId, String interlocutorId, MessageDto dto) {
@@ -40,6 +33,7 @@ public class MessageServiceImpl implements MessageService {
 
     Message repliedMessage = getRepliedMessage(dto, chat, user);
     List<Message> forwardedMessages = getForwardedMessages(dto, user);
+    List<MediaFile> attachedFiles = getAttachedFiles(dto);
 
     Integer newChatSeqId = chat.getLastSeqId() + 1;
 
@@ -49,6 +43,7 @@ public class MessageServiceImpl implements MessageService {
         .chatSeqId(newChatSeqId)
         .repliedMessage(repliedMessage)
         .forwardedMessages(forwardedMessages)
+        .attachedFiles(attachedFiles)
         .build();
     message = update(message);
 
@@ -65,6 +60,15 @@ public class MessageServiceImpl implements MessageService {
     message.setPersonalSequenceId(user.getLastMsgSeqId());
 
     return message;
+  }
+
+  @Override
+  public Message get(String id) {
+    Optional<Message> optional = messageRepository.findById(id);
+    if (optional.isEmpty())
+        throw new CustomException(ErrorTypeEnum.NOT_FOUND, "Message was not found");
+
+    return optional.get();
   }
 
   private Message getRepliedMessage(MessageDto dto, Chat chat, User user) {
@@ -107,6 +111,16 @@ public class MessageServiceImpl implements MessageService {
     });
 
     return new ArrayList<>(forwardedMessages);
+  }
+
+  private List<MediaFile> getAttachedFiles(MessageDto dto) {
+    if (dto.getAttachedFiles() == null)
+        return null;
+
+    Set<MediaFile> attachedFiles = new HashSet<>();
+    dto.getAttachedFiles().forEach(attachedFile -> attachedFiles.add(mediaService.get(attachedFile.getId())));
+
+    return new ArrayList<>(attachedFiles);
   }
 
   @Override

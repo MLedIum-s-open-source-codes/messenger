@@ -39,6 +39,10 @@ public class Message extends BaseModel {
   @Builder.Default
   private List<Message> forwardedMessages = new ArrayList<>();
 
+  @DBRef
+  @Builder.Default
+  private List<MediaFile> attachedFiles = new ArrayList<>();
+
   public Set<String> getForwardedMessagesSendersIds() {
     Set<String> sendersIds = new HashSet<>();
 

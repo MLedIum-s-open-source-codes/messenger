@@ -3,6 +3,7 @@ package org.example.messenger.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.example.messenger.domain.model.Chat;
 import org.example.messenger.domain.model.ChatUser;
+import org.example.messenger.enumeration.ChatTypeEnum;
 import org.example.messenger.repository.ChatRepository;
 import org.example.messenger.service.ChatService;
 import org.example.messenger.service.UserService;
@@ -51,7 +52,7 @@ public class ChatServiceImpl implements ChatService {
 
     ChatUser chatUser1 = ChatUser.builder().userId(userId).build();
 
-    Chat chat = Chat.builder().user(chatUser1).build();
+    Chat chat = Chat.builder().user(chatUser1).type(ChatTypeEnum.FAVOURITES).build();
 
     return update(chat);
   }
@@ -61,7 +62,7 @@ public class ChatServiceImpl implements ChatService {
     if (userId.equals(interlocutorId))
         return getChatByUserId(userId);
 
-    Optional<Chat> optional = chatRepository.findByUsersIds(userId, interlocutorId);
+    Optional<Chat> optional = chatRepository.findByUsersIds(userId, interlocutorId, ChatTypeEnum.DIRECT_MESSAGE.name());
     if (optional.isEmpty())
         return null;
 
@@ -69,7 +70,7 @@ public class ChatServiceImpl implements ChatService {
   }
 
   private Chat getChatByUserId(String userId) {
-    Optional<Chat> optional = chatRepository.findByUserId(userId);
+    Optional<Chat> optional = chatRepository.findByUserId(userId, ChatTypeEnum.FAVOURITES.name());
     if (optional.isEmpty())
         return null;
 
