@@ -6,10 +6,10 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(of = {"msgId"})
-public class MessageRef {
+@EqualsAndHashCode(of = {"objectId", "seqId"})
+public class ObjectRef {
 
-  private String msgId;
+  private String objectId;
 
   private Integer seqId;
 

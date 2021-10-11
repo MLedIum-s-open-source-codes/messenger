@@ -1,6 +1,7 @@
 package org.example.messenger.service.impl;
 
 import org.example.messenger.domain.request.AuthenticationRequest;
+import org.example.messenger.domain.request.RegistrationRequest;
 import org.example.messenger.domain.response.AuthenticationResponse;
 import org.example.messenger.domain.model.User;
 import org.example.messenger.enumeration.ErrorTypeEnum;
@@ -42,11 +43,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   }
 
   @Override
-  public AuthenticationResponse register(AuthenticationRequest authenticationRequest) {
-    userService.checkNotExistsUserWithUsername(authenticationRequest.getUsername());
+  public AuthenticationResponse register(RegistrationRequest registrationRequest) {
+    userService.checkNotExistsUserWithUsername(registrationRequest.getUsername());
 
-    authenticationRequest.setPassword(passwordEncoder.encode(authenticationRequest.getPassword()));
-    User user = userService.create(authenticationRequest);
+    registrationRequest.setPassword(passwordEncoder.encode(registrationRequest.getPassword()));
+    User user = userService.create(registrationRequest);
 
     String token = jwtTokenProvider.createToken(user);
 

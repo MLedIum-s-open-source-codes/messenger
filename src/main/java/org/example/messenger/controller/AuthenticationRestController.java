@@ -1,6 +1,7 @@
 package org.example.messenger.controller;
 
 import org.example.messenger.domain.request.AuthenticationRequest;
+import org.example.messenger.domain.request.RegistrationRequest;
 import org.example.messenger.domain.response.AuthenticationResponse;
 import org.example.messenger.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +26,9 @@ public class AuthenticationRestController {
   }
 
   @PostMapping("/register")
-  public ResponseEntity<AuthenticationResponse> register(@RequestBody AuthenticationRequest authenticationRequest) {
+  public ResponseEntity<AuthenticationResponse> register(@RequestBody RegistrationRequest registrationRequest) {
 
-    return ResponseEntity.ok(authenticationService.register(authenticationRequest));
+    return ResponseEntity.ok(authenticationService.register(registrationRequest));
   }
 
   @DeleteMapping("/logout")

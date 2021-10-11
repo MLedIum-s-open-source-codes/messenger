@@ -7,7 +7,11 @@ import java.util.List;
 
 public interface MessageService {
 
-  Message send(String from, String to, MessageDto dto);
+  Message sendToFavourites(String userId, MessageDto dto);
+
+  Message sendToUser(String from, String to, MessageDto dto);
+
+  Message sendToConversation(String from, Integer to, MessageDto dto);
 
   Message get(String id);
 

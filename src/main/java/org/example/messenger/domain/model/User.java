@@ -2,7 +2,9 @@ package org.example.messenger.domain.model;
 
 import lombok.*;
 import org.example.messenger.domain.audit.BaseModel;
+import org.example.messenger.enumeration.ErrorTypeEnum;
 import org.example.messenger.enumeration.RoleEnum;
+import org.example.messenger.exception.CustomException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
@@ -38,7 +40,13 @@ public class User extends BaseModel {
   private Integer recMsgSeqId = 0;
 
   @Builder.Default
-  List<MessageRef> messages = new ArrayList<>();
+  List<ObjectRef> messages = new ArrayList<>();
+
+  @Builder.Default
+  private Integer lastConversationSeqId = 0;
+
+  @Builder.Default
+  List<ObjectRef> conversations = new ArrayList<>();
 
   @Builder.Default
   private Set<String> roles = new HashSet<>();
@@ -48,24 +56,56 @@ public class User extends BaseModel {
 
   public void addMessage(Message message) {
     messages.add(
-        MessageRef.builder()
-        .msgId(message.getId())
+        ObjectRef.builder()
+        .objectId(message.getId())
         .seqId(++lastMsgSeqId)
         .build()
     );
   }
 
-  public Optional<MessageRef> getMessagePersonalSequenceByMsgId(String MPSMsgId) {
+  public Optional<ObjectRef> getMessagePersonalSequenceByMsgId(String MPSMsgId) {
 
     return messages.stream().filter(
-        mPS -> mPS.getMsgId().equals(MPSMsgId)
+        mPS -> mPS.getObjectId().equals(MPSMsgId)
     ).findFirst();
   }
 
-  public Optional<MessageRef> getMessagePersonalSequenceBySeqId(Integer MPSSeqId) {
+  public Optional<ObjectRef> getMessagePersonalSequenceBySeqId(Integer MPSSeqId) {
 
     return messages.stream().filter(
         mPS -> mPS.getSeqId().equals(MPSSeqId)
+    ).findFirst();
+  }
+
+  public void addConversation(Chat chat) {
+    lastConversationSeqId++;
+    conversations.add(
+        ObjectRef.builder()
+            .objectId(chat.getId())
+            .seqId(lastConversationSeqId)
+            .build()
+    );
+  }
+
+  public void removeConversation(Chat chat) {
+    Optional<ObjectRef> ref = getConversationPersonalSequenceByConversationId(chat.getId());
+    if (ref.isEmpty())
+        throw new CustomException(ErrorTypeEnum.NOT_FOUND, "Conversation not found");
+
+    conversations.remove(ref.get());
+  }
+
+  public Optional<ObjectRef> getConversationPersonalSequenceByConversationId(String CPSMsgId) {
+
+    return conversations.stream().filter(
+        cPS -> cPS.getObjectId().equals(CPSMsgId)
+    ).findFirst();
+  }
+
+  public Optional<ObjectRef> getConversationPersonalSequenceBySeqId(Integer CPSSeqId) {
+
+    return conversations.stream().filter(
+        cPS -> cPS.getSeqId().equals(CPSSeqId)
     ).findFirst();
   }
 
@@ -75,6 +115,7 @@ public class User extends BaseModel {
   }
 
   public void removeRole(RoleEnum role) {
+
     this.roles.remove(role.getName());
   }
 

@@ -4,6 +4,7 @@ import lombok.*;
 import org.example.messenger.domain.audit.BaseModel;
 import org.example.messenger.enumeration.ChatTypeEnum;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
@@ -25,13 +26,16 @@ public class Chat extends BaseModel {
   private List<ChatUser> users;
 
   @Builder.Default
-  private List<MessageRef> messages = new ArrayList<>();
-
-  @Builder.Default
-  private Integer lastSeqId = 0;
+  private List<ObjectRef> messages = new ArrayList<>();
 
   @Builder.Default
   private ChatTypeEnum type = ChatTypeEnum.DIRECT_MESSAGE;
+
+  @DBRef
+  private MediaFile photo;
+
+  @Builder.Default
+  private Integer lastSeqId = 0;
 
   public Optional<ChatUser> getInterlocutor(String currentUserId) {
     for (ChatUser chatUser : getUsers()) {
@@ -43,14 +47,14 @@ public class Chat extends BaseModel {
     return Optional.empty();
   }
 
-  public Optional<MessageRef> getLastMessageRef() {
+  public Optional<ObjectRef> getLastMessageRef() {
 
     return getMessages().stream().filter(message -> message.getSeqId().equals(lastSeqId)).findFirst();
   }
 
   public boolean containsMessageWithId(String id) {
-    for (MessageRef chatMessage : messages) {
-      if (chatMessage.getMsgId().equals(id))
+    for (ObjectRef chatMessage : messages) {
+      if (chatMessage.getObjectId().equals(id))
           return true;
     }
 

@@ -14,4 +14,15 @@ public class ChatUser {
   @Builder.Default
   private Integer readSeqId = 0;
 
+  private Boolean isOwner;
+
+  public ChatUser(String userId) {
+    this.userId = userId;
+  }
+
+  public ChatUser(String userId, Boolean isOwner) {
+    this.userId = userId;
+    this.isOwner = isOwner;
+  }
+
 }

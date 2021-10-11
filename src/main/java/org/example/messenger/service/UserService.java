@@ -3,6 +3,7 @@ package org.example.messenger.service;
 import org.example.messenger.domain.dto.UserDto;
 import org.example.messenger.domain.request.AuthenticationRequest;
 import org.example.messenger.domain.model.User;
+import org.example.messenger.domain.request.RegistrationRequest;
 import org.example.messenger.enumeration.ErrorTypeEnum;
 import org.example.messenger.exception.CustomException;
 
@@ -10,7 +11,7 @@ import static java.lang.String.format;
 
 public interface UserService {
 
-  User create(AuthenticationRequest authenticationRequest);
+  User create(RegistrationRequest registrationRequest);
 
   User get(String id);
 

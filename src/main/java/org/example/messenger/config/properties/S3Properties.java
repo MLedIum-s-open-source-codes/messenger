@@ -9,12 +9,12 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties("s3.properties")
 public class S3Properties {
 
-  private final String accessKey;
-  private final String secretKey;
+  private String accessKey;
+  private String secretKey;
 
-  private final String bucketName;
-  private final String region;
+  private String bucketName;
+  private String region;
 
-  private final String publicUrl;
+  private String publicUrl;
 
 }

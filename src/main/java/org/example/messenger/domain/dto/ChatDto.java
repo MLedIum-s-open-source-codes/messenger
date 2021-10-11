@@ -3,6 +3,7 @@ package org.example.messenger.domain.dto;
 import lombok.*;
 import org.example.messenger.domain.model.Chat;
 import org.example.messenger.domain.model.User;
+import org.example.messenger.enumeration.ChatTypeEnum;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,5 +18,7 @@ public class ChatDto {
   private String id;
 
   private MessageDto lastMessage;
+
+  private ChatTypeEnum chatType;
 
 }

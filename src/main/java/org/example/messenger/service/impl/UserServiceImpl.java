@@ -3,6 +3,7 @@ package org.example.messenger.service.impl;
 import org.example.messenger.domain.dto.UserDto;
 import org.example.messenger.domain.request.AuthenticationRequest;
 import org.example.messenger.domain.model.User;
+import org.example.messenger.domain.request.RegistrationRequest;
 import org.example.messenger.enumeration.ErrorTypeEnum;
 import org.example.messenger.enumeration.RoleEnum;
 import org.example.messenger.exception.CustomException;
@@ -22,13 +23,13 @@ public class UserServiceImpl implements UserService {
   private final UserRepository userRepository;
 
   @Override
-  public User create(AuthenticationRequest authenticationRequest) {
-    checkNotExistsUserWithUsername(authenticationRequest.getUsername());
+  public User create(RegistrationRequest registrationRequest) {
+    checkNotExistsUserWithUsername(registrationRequest.getUsername());
 
     User user = User.builder()
-        .username(authenticationRequest.getUsername())
-        .publicName(authenticationRequest.getPublicName())
-        .password(authenticationRequest.getPassword())
+        .username(registrationRequest.getUsername())
+        .publicName(registrationRequest.getPublicName())
+        .password(registrationRequest.getPassword())
         .enabled(true)
         .build();
 

@@ -20,7 +20,7 @@ public class UserDto {
     return UserDto.builder()
         .id(user.getId())
         .name(user.getPublicName())
-        .avatar(MediaFileDto.of(user.getAvatar()))
+        .avatar(user.getAvatar() == null ? null : MediaFileDto.of(user.getAvatar()))
         .build();
   }
 

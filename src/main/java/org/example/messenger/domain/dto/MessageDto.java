@@ -2,7 +2,7 @@ package org.example.messenger.domain.dto;
 
 import lombok.*;
 import org.example.messenger.domain.model.Message;
-import org.example.messenger.domain.model.MessageRef;
+import org.example.messenger.domain.model.ObjectRef;
 import org.example.messenger.domain.model.User;
 
 import java.util.List;
@@ -29,7 +29,7 @@ public class MessageDto {
   private List<MediaFileDto> attachedFiles;
 
   public static MessageDto of(Message message, User user) {
-    Optional<MessageRef> MPS = user.getMessagePersonalSequenceByMsgId(message.getId());
+    Optional<ObjectRef> MPS = user.getMessagePersonalSequenceByMsgId(message.getId());
     MPS.ifPresent(
         messagePersonalSequence -> message.setPersonalSequenceId(messagePersonalSequence.getSeqId())
     );
