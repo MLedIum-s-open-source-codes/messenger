@@ -85,6 +85,7 @@ public class ChatServiceImpl implements ChatService {
     Chat chat = Chat.builder()
         .user(chatUser1)
         .user(chatUser2)
+        .type(ChatTypeEnum.DIRECT_MESSAGE)
         .build();
 
     return update(chat);

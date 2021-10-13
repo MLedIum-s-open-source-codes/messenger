@@ -78,11 +78,10 @@ public class User extends BaseModel {
   }
 
   public void addConversation(Chat chat) {
-    lastConversationSeqId++;
     conversations.add(
         ObjectRef.builder()
             .objectId(chat.getId())
-            .seqId(lastConversationSeqId)
+            .seqId(++lastConversationSeqId)
             .build()
     );
   }

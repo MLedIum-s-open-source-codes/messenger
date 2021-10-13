@@ -28,8 +28,7 @@ public class Chat extends BaseModel {
   @Builder.Default
   private List<ObjectRef> messages = new ArrayList<>();
 
-  @Builder.Default
-  private ChatTypeEnum type = ChatTypeEnum.DIRECT_MESSAGE;
+  private ChatTypeEnum type;
 
   @DBRef
   private MediaFile photo;
