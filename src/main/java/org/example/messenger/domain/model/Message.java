@@ -7,10 +7,7 @@ import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Data
 @Builder
@@ -23,14 +20,13 @@ public class Message extends BaseModel {
   @Id
   private String id;
 
-  @Transient
-  private Integer personalSequenceId;
+  private String chatId;
 
   private Integer chatSeqId;
 
-  private String text;
-
   private String senderId;
+
+  private String text;
 
   @DBRef
   private Message repliedMessage;
@@ -43,21 +39,12 @@ public class Message extends BaseModel {
   @Builder.Default
   private List<MediaFile> attachedFiles = new ArrayList<>();
 
-  public Set<String> getForwardedMessagesSendersIds() {
-    Set<String> sendersIds = new HashSet<>();
+  @Builder.Default
+  private List<ObjectRef> usersPersonalSequenceIds = new ArrayList<>();
 
-    return getForwardedMessagesSendersIds(sendersIds);
-  }
+  public Optional<ObjectRef> getPersonalSeqIdByUserId(String userId) {
 
-  public Set<String> getForwardedMessagesSendersIds(Set<String> sendersIds) {
-    sendersIds.add(senderId);
-    if (forwardedMessages != null) {
-      forwardedMessages.forEach(forwardedMessage -> {
-        forwardedMessage.getForwardedMessagesSendersIds(sendersIds);
-      });
-    }
-
-    return sendersIds;
+    return usersPersonalSequenceIds.stream().filter(objectRef -> objectRef.getObjectId().equals(userId)).findFirst();
   }
 
 }

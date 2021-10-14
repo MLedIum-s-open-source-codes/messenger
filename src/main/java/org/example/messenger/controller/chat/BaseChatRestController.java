@@ -42,14 +42,14 @@ public class BaseChatRestController {
 
     if (!chatsModels.isEmpty()) {
       chatsModels.forEach(chatModel -> {
-        Optional<ObjectRef> lastMessageRef = chatModel.getLastMessageRef();
+        Optional<Message> lastMessage = messageService.findLastByChatIdAndUserId(chatModel.getId(), userId);
 
-        if (lastMessageRef.isPresent() || chatModel.getType() != ChatTypeEnum.DIRECT_MESSAGE) {
-          Message message = lastMessageRef.map(objectRef -> messageService.get(objectRef.getObjectId())).orElse(null);
+        if (lastMessage.isPresent() || chatModel.getType() != ChatTypeEnum.DIRECT_MESSAGE) {
+          Message message = lastMessage.orElse(null);
           Optional<ChatUser> interlocutor = chatModel.getInterlocutor(userId);
           chats.add(ChatDto.builder()
               .id(interlocutor.isPresent() ? interlocutor.get().getUserId() : userId)
-              .lastMessage(message == null ? null : MessageDto.of(message, user))
+              .lastMessage(message == null ? null : MessageDto.of(message, userId))
               .chatType(chatModel.getType())
               .build()
           );

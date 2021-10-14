@@ -11,13 +11,13 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Secured({"ROLE_USER"})
-@RequestMapping("/messenger/")
+@RequestMapping("/messenger")
 @RequiredArgsConstructor
 public class MessageRestController {
 
   private final MessageService messageService;
 
-  @PostMapping("{interlocutorId}/messages")
+  @PostMapping("/{interlocutorId}/messages")
   public ResponseEntity<MessageDto> sendMessageToUser(
       @PathVariable String interlocutorId,
       @RequestBody MessageDto dto,
@@ -28,10 +28,10 @@ public class MessageRestController {
         ? messageService.sendToFavourites(userId, dto)
         : messageService.sendToUser(userId, interlocutorId, dto);
 
-    return ResponseEntity.ok(MessageDto.of(message));
+    return ResponseEntity.ok(MessageDto.of(message, userId));
   }
 
-  @PostMapping("c{conversationSeqId}/messages")
+  @PostMapping("/c{conversationSeqId}/messages")
   public ResponseEntity<MessageDto> sendMessageToConversation(
       @PathVariable Integer conversationSeqId,
       @RequestBody MessageDto dto,
@@ -39,7 +39,7 @@ public class MessageRestController {
   ) {
 
     return ResponseEntity.ok(MessageDto.of(
-        messageService.sendToConversation(userId, conversationSeqId, dto)
+        messageService.sendToConversation(userId, conversationSeqId, dto), userId
     ));
   }
 

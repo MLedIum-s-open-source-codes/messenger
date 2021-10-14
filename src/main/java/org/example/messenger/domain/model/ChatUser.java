@@ -18,11 +18,6 @@ public class ChatUser {
 
   private String invitedBy;
 
-  public ChatUser(String userId) {
-
-    this.userId = userId;
-  }
-
   public ChatUser(String userId, String invitedBy) {
     this.userId = userId;
     this.invitedBy = invitedBy;

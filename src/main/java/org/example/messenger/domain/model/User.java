@@ -37,12 +37,6 @@ public class User extends BaseModel {
   private Integer lastMsgSeqId = 0;
 
   @Builder.Default
-  private Integer recMsgSeqId = 0;
-
-  @Builder.Default
-  List<ObjectRef> messages = new ArrayList<>();
-
-  @Builder.Default
   private Integer lastConversationSeqId = 0;
 
   @Builder.Default
@@ -55,26 +49,8 @@ public class User extends BaseModel {
   private MediaFile avatar;
 
   public void addMessage(Message message) {
-    messages.add(
-        ObjectRef.builder()
-        .objectId(message.getId())
-        .seqId(++lastMsgSeqId)
-        .build()
-    );
-  }
 
-  public Optional<ObjectRef> getMessagePersonalSequenceByMsgId(String MPSMsgId) {
-
-    return messages.stream().filter(
-        mPS -> mPS.getObjectId().equals(MPSMsgId)
-    ).findFirst();
-  }
-
-  public Optional<ObjectRef> getMessagePersonalSequenceBySeqId(Integer MPSSeqId) {
-
-    return messages.stream().filter(
-        mPS -> mPS.getSeqId().equals(MPSSeqId)
-    ).findFirst();
+    message.getUsersPersonalSequenceIds().add(ObjectRef.builder().objectId(this.id).seqId(++lastMsgSeqId).build());
   }
 
   public void addConversation(Chat chat) {

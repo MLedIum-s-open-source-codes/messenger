@@ -9,7 +9,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,9 +26,6 @@ public class Chat extends BaseModel {
   @Singular
   private List<ChatUser> users;
 
-  @Builder.Default
-  private List<ObjectRef> messages = new ArrayList<>();
-
   private ChatTypeEnum type;
 
   @DBRef
@@ -46,20 +42,6 @@ public class Chat extends BaseModel {
     }
 
     return Optional.empty();
-  }
-
-  public Optional<ObjectRef> getLastMessageRef() {
-
-    return getMessages().stream().filter(message -> message.getSeqId().equals(lastSeqId)).findFirst();
-  }
-
-  public boolean containsMessageWithId(String id) {
-    for (ObjectRef chatMessage : messages) {
-      if (chatMessage.getObjectId().equals(id))
-          return true;
-    }
-
-    return false;
   }
 
   public void addUser(String idInvitingUser, String idUserBeingAdded) {
@@ -82,7 +64,7 @@ public class Chat extends BaseModel {
         chatUser -> chatUser.getUserId().equals(idUserBeingDeleted)
     ).findFirst().orElseThrow(() -> new CustomException(ErrorTypeEnum.BAD_REQUEST, "User is not in conversation"));
 
-    if (deletingChatUser.getIsOwner() || chatUserBeingDeleted.getInvitedBy().equals(idDeletingUser)) {
+    if (deletingChatUser.getIsOwner() || chatUserBeingDeleted.getInvitedBy().equals(idDeletingUser) || idDeletingUser.equals(idUserBeingDeleted)) {
       users.remove(chatUserBeingDeleted);
     } else {
       throw new CustomException(ErrorTypeEnum.ACCESS_DENIED, "User does not have access to this action");

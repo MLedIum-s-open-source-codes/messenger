@@ -1,7 +1,6 @@
 package org.example.messenger.service.impl.message;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 import org.example.messenger.domain.dto.MessageDto;
 import org.example.messenger.domain.model.*;
 import org.example.messenger.enumeration.ErrorTypeEnum;
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-@Log4j2
 @Service
 @RequiredArgsConstructor
 public class MessageServiceImpl implements MessageService {
@@ -28,14 +26,12 @@ public class MessageServiceImpl implements MessageService {
     User user = userService.get(userId);
 
     Message message = createMessage(dto, chat, user);
+    chatService.update(chat);
 
     user.addMessage(message);
     userService.update(user);
 
-    addMessageToChat(message, chat);
-
-    message.setPersonalSequenceId(user.getLastMsgSeqId());
-    return message;
+    return update(message);
   }
 
   @Override
@@ -45,6 +41,7 @@ public class MessageServiceImpl implements MessageService {
     User interlocutor = userService.get(interlocutorId);
 
     Message message = createMessage(dto, chat, user);
+    chatService.update(chat);
 
     user.addMessage(message);
     userService.update(user);
@@ -52,10 +49,7 @@ public class MessageServiceImpl implements MessageService {
     interlocutor.addMessage(message);
     userService.update(interlocutor);
 
-    addMessageToChat(message, chat);
-
-    message.setPersonalSequenceId(user.getLastMsgSeqId());
-    return message;
+    return update(message);
   }
 
   @Override
@@ -69,6 +63,7 @@ public class MessageServiceImpl implements MessageService {
     Chat chat = chatService.getById(conversationRef.get().getObjectId());
 
     Message message = createMessage(dto, chat, user);
+    chatService.update(chat);
 
     chat.getUsers().forEach(conversationChatUser -> {
       User conversationUser = userService.get(conversationChatUser.getUserId());
@@ -76,12 +71,7 @@ public class MessageServiceImpl implements MessageService {
       userService.update(conversationUser);
     });
 
-    addMessageToChat(message, chat);
-
-    // +1 is used because when adding a message to the sender,
-    // we do not update it in the current method and the value of the last seqId remains obsolete
-    message.setPersonalSequenceId(user.getLastMsgSeqId()+1);
-    return message;
+    return update(message);
   }
 
   @Override
@@ -91,6 +81,29 @@ public class MessageServiceImpl implements MessageService {
         throw new CustomException(ErrorTypeEnum.NOT_FOUND, "Message was not found");
 
     return optional.get();
+  }
+
+  @Override
+  public List<Message> getAllByChatIdAndUserId(String chatId, String userId) {
+
+    return messageRepository.findAllByChatIdAndUserId(chatId, userId);
+  }
+
+  @Override
+  public Optional<Message> findLastByChatIdAndUserId(String chatId, String userId) {
+    Chat chat = chatService.getById(chatId);
+
+    return findByChatIdAndUserIdAndChatSeqId(chatId, userId, chat.getLastSeqId());
+  }
+
+  private Optional<Message> findByChatIdAndUserIdAndChatSeqId(String chatId, String userId, Integer seqId) {
+
+    return messageRepository.findByChatIdAndUserIdAndChatSeqId(chatId, userId, seqId);
+  }
+
+  private Optional<Message> findByUserIdAndPersonalSeqId(String userId, Integer seqId) {
+
+    return messageRepository.findByUserIdAndPersonalSeqId(userId, seqId);
   }
 
   @Override
@@ -105,11 +118,13 @@ public class MessageServiceImpl implements MessageService {
     List<MediaFile> attachedFiles = getAttachedFiles(dto);
 
     Integer newChatSeqId = chat.getLastSeqId() + 1;
+    chat.setLastSeqId(newChatSeqId);
 
     return update(Message.builder()
+        .chatId(chat.getId())
+        .chatSeqId(newChatSeqId)
         .senderId(user.getId())
         .text(dto.getText())
-        .chatSeqId(newChatSeqId)
         .repliedMessage(repliedMessage)
         .forwardedMessages(forwardedMessages)
         .attachedFiles(attachedFiles)
@@ -120,24 +135,11 @@ public class MessageServiceImpl implements MessageService {
     if (dto.getRepliedMessage() == null)
         return null;
 
-    Optional<ObjectRef> mPSOptional = user.getMessagePersonalSequenceBySeqId(dto.getRepliedMessage().getId());
-    if (mPSOptional.isEmpty())
+    Optional<Message> repliedMessageOptional = findByUserIdAndPersonalSeqId(user.getId(), dto.getRepliedMessage().getId());
+    if (repliedMessageOptional.isEmpty() || !repliedMessageOptional.get().getChatId().equals(chat.getId()))
         return null;
 
-    Optional<Message> optional = messageRepository.findById(mPSOptional.get().getObjectId());
-    if (optional.isEmpty())
-        return null;
-
-    if (!chat.containsMessageWithId(optional.get().getId())) {
-
-      if (dto.getForwardedMessages() == null)
-          dto.setForwardedMessages(new ArrayList<>());
-
-      dto.getForwardedMessages().add(dto.getRepliedMessage());
-      return null;
-    }
-
-    return optional.get();
+    return repliedMessageOptional.get();
   }
 
   private List<Message> getForwardedMessages(MessageDto dto, User user) {
@@ -146,13 +148,9 @@ public class MessageServiceImpl implements MessageService {
 
     Set<Message> forwardedMessages = new HashSet<>();
 
-    dto.getForwardedMessages().forEach(forwardedMessage -> {
-      Optional<ObjectRef> mPSOptional = user.getMessagePersonalSequenceBySeqId(forwardedMessage.getId());
-      if (mPSOptional.isEmpty())
-          return;
-
-      Optional<Message> msgOptional = messageRepository.findById(mPSOptional.get().getObjectId());
-      msgOptional.ifPresent(forwardedMessages::add);
+    dto.getForwardedMessages().forEach(forwardedMessageDto -> {
+      Optional<Message> forwardedMessageOptional = findByUserIdAndPersonalSeqId(user.getId(), forwardedMessageDto.getId());
+      forwardedMessageOptional.ifPresent(forwardedMessages::add);
     });
 
     return new ArrayList<>(forwardedMessages);
@@ -166,12 +164,6 @@ public class MessageServiceImpl implements MessageService {
     dto.getAttachedFiles().forEach(attachedFile -> attachedFiles.add(mediaService.get(attachedFile.getId())));
 
     return new ArrayList<>(attachedFiles);
-  }
-
-  private void addMessageToChat(Message message, Chat chat) {
-    chat.getMessages().add(ObjectRef.builder().objectId(message.getId()).seqId(message.getChatSeqId()).build());
-    chat.setLastSeqId(message.getChatSeqId());
-    chatService.update(chat);
   }
 
 }

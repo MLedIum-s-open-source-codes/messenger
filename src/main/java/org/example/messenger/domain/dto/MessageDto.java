@@ -28,33 +28,19 @@ public class MessageDto {
 
   private List<MediaFileDto> attachedFiles;
 
-  public static MessageDto of(Message message, User user) {
-    Optional<ObjectRef> MPS = user.getMessagePersonalSequenceByMsgId(message.getId());
-    MPS.ifPresent(
-        messagePersonalSequence -> message.setPersonalSequenceId(messagePersonalSequence.getSeqId())
-    );
+  public static MessageDto of(Message message, String userId) {
+    Optional<ObjectRef> optional = message.getPersonalSeqIdByUserId(userId);
+    Integer personalSequenceId = optional.map(ObjectRef::getSeqId).orElse(null);
 
-    Message repliedMessage = message.getRepliedMessage();
-    if (repliedMessage != null) {
-      MPS = user.getMessagePersonalSequenceByMsgId(repliedMessage.getId());
-      MPS.ifPresent(
-          messagePersonalSequence -> repliedMessage.setPersonalSequenceId(messagePersonalSequence.getSeqId())
-      );
-    }
-
-    return of(message);
-  }
-
-  public static MessageDto of(Message message) {
     return MessageDto.builder()
-        .id(message.getPersonalSequenceId() == null ? null : message.getPersonalSequenceId())
+        .id(personalSequenceId)
         .text(message.getText())
         .senderId(message.getSenderId())
         .repliedMessage(message.getRepliedMessage() == null ? null :
-            MessageDto.of(message.getRepliedMessage())
+            MessageDto.of(message.getRepliedMessage(), userId)
         )
         .forwardedMessages(message.getForwardedMessages() == null ? null :
-            message.getForwardedMessages().stream().map(MessageDto::of).collect(Collectors.toList())
+            message.getForwardedMessages().stream().map(forwardedMessage -> MessageDto.of(forwardedMessage, userId)).collect(Collectors.toList())
         )
         .attachedFiles(message.getAttachedFiles() == null ? null :
             message.getAttachedFiles().stream().map(MediaFileDto::of).collect(Collectors.toList())
