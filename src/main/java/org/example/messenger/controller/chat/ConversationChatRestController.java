@@ -14,9 +14,10 @@ import org.example.messenger.domain.response.ChatHistory;
 import org.example.messenger.enumeration.ChatTypeEnum;
 import org.example.messenger.enumeration.ErrorTypeEnum;
 import org.example.messenger.exception.CustomException;
-import org.example.messenger.service.ChatService;
+import org.example.messenger.service.ConversationChatService;
 import org.example.messenger.service.MessageService;
 import org.example.messenger.service.UserService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ConversationChatRestController {
 
-  private final ChatService chatService;
+  private final ConversationChatService chatService;
   private final MessageService messageService;
   private final UserService userService;
 
@@ -78,7 +79,7 @@ public class ConversationChatRestController {
 
     List<MessageDto> messages = chatModel.getMessages() == null ? null : chatModel.getMessages().stream().map(
         messageRef -> MessageDto.of(messageService.get(messageRef.getObjectId()), user)
-    ).collect(Collectors.toList());
+    ).filter(msg -> msg.getId() != null).collect(Collectors.toList());
 
     return ResponseEntity.ok(ChatHistory.builder()
         .me(UserDto.of(userService.get(userId)))
@@ -87,6 +88,45 @@ public class ConversationChatRestController {
         .usersData(users)
         .messages(messages)
         .build());
+  }
+
+  @PostMapping("/c{conversationSeqId}/users")
+  public ResponseEntity<UserDto> addChatUser(
+      @PathVariable Integer conversationSeqId,
+      @RequestBody UserDto addingUserDto,
+      @UserId String userId
+  ) {
+    User user = userService.get(userId);
+    User addingUser = userService.get(addingUserDto.getId());
+
+    Optional<ObjectRef> ref = user.getConversationPersonalSequenceBySeqId(conversationSeqId);
+    if (ref.isEmpty())
+        throw new CustomException(ErrorTypeEnum.NOT_FOUND, "Conversation not found");
+
+    chatService.addUserToConversation(ref.get().getObjectId(), userId, addingUserDto.getId());
+    addingUser.addConversation(chatService.getById(ref.get().getObjectId()));
+    userService.update(addingUser);
+
+    return ResponseEntity.ok(UserDto.of(addingUser));
+  }
+
+  @DeleteMapping("/c{conversationSeqId}/users")
+  public ResponseEntity<HttpStatus> removeChatUser(
+      @PathVariable Integer conversationSeqId,
+      @RequestBody String removableUserId,
+      @UserId String userId
+  ) {
+    User user = userService.get(userId);
+    User removableUser = userService.get(removableUserId);
+
+    Optional<ObjectRef> ref = user.getConversationPersonalSequenceBySeqId(conversationSeqId);
+    String convId = ref.orElseThrow(() -> new CustomException(ErrorTypeEnum.NOT_FOUND, "Conversation not found")).getObjectId();
+
+    chatService.removeUserFromConversation(convId, userId, removableUserId);
+    removableUser.removeConversation(chatService.getById(convId));
+    userService.update(removableUser);
+
+    return ResponseEntity.ok().build();
   }
 
   private Set<String> getUploadedUsersIds(Chat chat, String userId) {

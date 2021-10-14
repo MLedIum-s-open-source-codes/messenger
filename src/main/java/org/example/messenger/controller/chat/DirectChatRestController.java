@@ -9,7 +9,7 @@ import org.example.messenger.domain.model.ChatUser;
 import org.example.messenger.domain.model.User;
 import org.example.messenger.domain.response.ChatHistory;
 import org.example.messenger.enumeration.ChatTypeEnum;
-import org.example.messenger.service.ChatService;
+import org.example.messenger.service.DirectChatService;
 import org.example.messenger.service.MessageService;
 import org.example.messenger.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DirectChatRestController {
 
-  private final ChatService chatService;
+  private final DirectChatService chatService;
   private final MessageService messageService;
   private final UserService userService;
 

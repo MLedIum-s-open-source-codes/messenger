@@ -1,4 +1,4 @@
-package org.example.messenger.service.impl;
+package org.example.messenger.service.impl.message;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -7,10 +7,7 @@ import org.example.messenger.domain.model.*;
 import org.example.messenger.enumeration.ErrorTypeEnum;
 import org.example.messenger.exception.CustomException;
 import org.example.messenger.repository.MessageRepository;
-import org.example.messenger.service.ChatService;
-import org.example.messenger.service.MediaService;
-import org.example.messenger.service.MessageService;
-import org.example.messenger.service.UserService;
+import org.example.messenger.service.*;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -21,7 +18,7 @@ import java.util.*;
 public class MessageServiceImpl implements MessageService {
 
   private final MessageRepository messageRepository;
-  private final ChatService chatService;
+  private final DirectChatService chatService;
   private final UserService userService;
   private final MediaService mediaService;
 

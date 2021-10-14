@@ -11,7 +11,7 @@ public interface MessageService {
 
   Message sendToUser(String from, String to, MessageDto dto);
 
-  Message sendToConversation(String from, Integer to, MessageDto dto);
+  Message sendToConversation(String from, Integer conversationSeqId, MessageDto dto);
 
   Message get(String id);
 
